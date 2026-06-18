@@ -21,6 +21,12 @@ import { COLORS, SPACING, FONT, RADIUS } from '../../constants/theme';
 import { formatDate, formatWeight } from '../../utils/formatters';
 import { getExerciseById, exercises } from '../../data/exercises';
 import { MuscleGroup } from '../../types';
+import {
+  checkIfDeloadNeeded,
+  calculateWeeklyVolume,
+  adaptSessionsToMuscleGroups,
+  HYPERTROPHY_WEEKLY_VOLUME_TARGET,
+} from '../../lib/progression';
 
 type Tab = 'general' | 'ejercicio' | 'musculos';
 
@@ -29,8 +35,13 @@ const ALL_MUSCLES: MuscleGroup[] = [
   'legs', 'quads', 'hamstrings', 'glutes', 'calves', 'core',
 ];
 
+const MUSCLE_LABELS_ES: Record<string, string> = {
+  chest: 'Pecho', back: 'Espalda', shoulders: 'Hombros',
+  biceps: 'Bíceps', triceps: 'Tríceps', legs: 'Piernas', core: 'Core',
+};
+
 export default function ProgressScreen() {
-  const { sessions, personalRecords, streak, bestStreak, achievements } = useProgressStore();
+  const { sessions, personalRecords, streak, bestStreak, achievements, lastDeloadDate, setLastDeloadDate } = useProgressStore();
   const [tab, setTab] = useState<Tab>('general');
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
   const [exPickerVisible, setExPickerVisible] = useState(false);
@@ -51,6 +62,19 @@ export default function ProgressScreen() {
 
   const prEntries = Object.entries(personalRecords);
   const unlockedAchievements = achievements.filter((a) => a.unlocked);
+
+  const deloadCheck = useMemo(() => checkIfDeloadNeeded(lastDeloadDate), [lastDeloadDate]);
+
+  const weeklyVolume = useMemo(() => {
+    const now = new Date();
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay());
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+    return calculateWeeklyVolume(adaptSessionsToMuscleGroups(sessions), weekStart, weekEnd);
+  }, [sessions]);
 
   // Ejercicios que tienen historial
   const exercisesWithHistory = useMemo(() => {
@@ -122,6 +146,52 @@ export default function ProgressScreen() {
               <Text style={styles.statLabel}>Este mes</Text>
             </Card>
           </View>
+
+          {/* Deload */}
+          {deloadCheck.shouldDeload && (
+            <>
+              <Text style={styles.sectionTitle}>Recuperación</Text>
+              <Card padding={SPACING.md} style={styles.deloadCard}>
+                <View style={styles.deloadHeader}>
+                  <Text style={styles.deloadEmoji}>🔄</Text>
+                  <View style={styles.deloadInfo}>
+                    <Text style={styles.deloadTitle}>Semana de deload recomendada</Text>
+                    <Text style={styles.deloadMsg}>{deloadCheck.message}</Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  style={styles.deloadBtn}
+                  onPress={() => setLastDeloadDate(new Date().toISOString().split('T')[0])}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.deloadBtnText}>Marcar semana de deload</Text>
+                </TouchableOpacity>
+              </Card>
+            </>
+          )}
+
+          {/* Volumen esta semana por músculo */}
+          {weeklyVolume.some((v) => v.completed_sets > 0) && (
+            <>
+              <Text style={styles.sectionTitle}>Volumen esta semana</Text>
+              <Card padding={SPACING.md}>
+                {weeklyVolume.filter((v) => v.completed_sets > 0).map((v) => {
+                  const pct = Math.min(v.percent_of_target, 150);
+                  const barColor = v.status === 'above' ? COLORS.warning : v.status === 'on_target' ? COLORS.success : COLORS.primary;
+                  return (
+                    <View key={v.muscle_group} style={styles.volumeRow}>
+                      <Text style={styles.volumeLabel}>{MUSCLE_LABELS_ES[v.muscle_group] ?? v.muscle_group}</Text>
+                      <View style={styles.volumeBarBg}>
+                        <View style={[styles.volumeBarFill, { width: `${pct}%`, backgroundColor: barColor }]} />
+                      </View>
+                      <Text style={styles.volumeCount}>{v.completed_sets}/{v.target_sets}</Text>
+                    </View>
+                  );
+                })}
+                <Text style={styles.volumeNote}>Objetivo: {HYPERTROPHY_WEEKLY_VOLUME_TARGET} series/semana por grupo muscular (ACSM 2026)</Text>
+              </Card>
+            </>
+          )}
 
           {/* Volumen semanal */}
           <Text style={styles.sectionTitle}>Volumen semanal (8 semanas)</Text>
@@ -410,6 +480,22 @@ const styles = StyleSheet.create({
   setChipText: { color: COLORS.textSecondary, fontSize: FONT.sm, fontWeight: '600' },
 
   muscleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
+
+  deloadCard: { borderWidth: 1, borderColor: COLORS.warning + '50', gap: SPACING.sm },
+  deloadHeader: { flexDirection: 'row', gap: SPACING.sm, alignItems: 'flex-start' },
+  deloadEmoji: { fontSize: 28 },
+  deloadInfo: { flex: 1 },
+  deloadTitle: { color: COLORS.warning, fontSize: FONT.base, fontWeight: '700' },
+  deloadMsg: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2, lineHeight: 18 },
+  deloadBtn: { backgroundColor: COLORS.warning + '20', borderRadius: RADIUS.md, paddingVertical: 10, alignItems: 'center', borderWidth: 1, borderColor: COLORS.warning + '40' },
+  deloadBtnText: { color: COLORS.warning, fontSize: FONT.base, fontWeight: '700' },
+
+  volumeRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: 8 },
+  volumeLabel: { color: COLORS.textSecondary, fontSize: FONT.sm, fontWeight: '600', width: 72 },
+  volumeBarBg: { flex: 1, height: 8, backgroundColor: COLORS.border, borderRadius: 4, overflow: 'hidden' },
+  volumeBarFill: { height: 8, borderRadius: 4 },
+  volumeCount: { color: COLORS.textMuted, fontSize: FONT.sm, width: 36, textAlign: 'right' },
+  volumeNote: { color: COLORS.textMuted, fontSize: 10, marginTop: 4, fontStyle: 'italic' },
 
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
   modalSheet: {

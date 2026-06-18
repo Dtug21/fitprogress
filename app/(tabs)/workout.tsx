@@ -10,10 +10,10 @@ import { RestTimerOverlay } from '../../components/workout/RestTimerOverlay';
 import { AlternativesPicker } from '../../components/workout/AlternativesPicker';
 import { WorkoutSummary } from '../../components/workout/WorkoutSummary';
 import { COLORS, SPACING, FONT } from '../../constants/theme';
-import { Routine, WorkoutSet, WorkoutSession, PersonalRecord } from '../../types';
+import { Routine, WorkoutSet, WorkoutSession, PersonalRecord, RIR } from '../../types';
 import { generateId } from '../../utils/calculations';
 import { getExerciseById } from '../../data/exercises';
-import { suggestNextWeight } from '../../lib/progression';
+import { suggestNextWeight, adaptSessionsToHistory, parseRepRange } from '../../lib/progression';
 
 export default function WorkoutScreen() {
   const {
@@ -61,7 +61,7 @@ export default function WorkoutScreen() {
   }
 
   // ─── Completar una serie ──────────────────────────────────────────
-  function handleCompleteSet(weight: number, reps: number) {
+  function handleCompleteSet(weight: number, reps: number, rir: RIR = 2) {
     if (!activeSession) return;
 
     const routineEx = sessionExercises[currentExerciseIndex];
@@ -73,6 +73,7 @@ export default function WorkoutScreen() {
       set_number: currentSetIndex + 1,
       reps,
       weight_kg: weight,
+      rir,
       completed: true,
       rest_seconds: routineEx.rest_seconds,
     };
@@ -172,13 +173,13 @@ export default function WorkoutScreen() {
   const exercise = routineEx ? getExerciseById(routineEx.exercise_id) : null;
 
   // Historial de este ejercicio para la sugerencia de progresión
-  const exerciseHistory = sessions
-    .filter((s) => s.sets.some((set) => set.exercise_id === routineEx?.exercise_id))
-    .map((s) => s.sets.filter((set) => set.exercise_id === routineEx?.exercise_id));
+  const exerciseHistory = routineEx
+    ? adaptSessionsToHistory(sessions, routineEx.exercise_id)
+    : [];
 
   const suggestion = exercise && routineEx
-    ? suggestNextWeight(exerciseHistory, routineEx.target_reps, exercise.muscle_group)
-    : { action: 'maintain' as const, new_weight: 0, message: '' };
+    ? suggestNextWeight(exerciseHistory, parseRepRange(routineEx.target_reps), exercise.muscle_group)
+    : { action: 'maintain_more_reps' as const, new_weight_kg: 0, message: '', reasoning: '' };
 
   // Descanso activo
   if (isResting) {

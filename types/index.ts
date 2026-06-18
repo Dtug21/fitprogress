@@ -38,6 +38,9 @@ export type ExerciseMode = 'home' | 'gym' | 'both';
 export type ExerciseType = 'compound' | 'isolation' | 'cardio' | 'mobility';
 export type Difficulty = 1 | 2 | 3 | 4 | 5;
 
+/** Repeticiones en reserva: 0 = al fallo, 4 = muy fácil */
+export type RIR = 0 | 1 | 2 | 3 | 4;
+
 export interface Exercise {
   id: string;
   name: string;
@@ -61,6 +64,7 @@ export interface WorkoutSet {
   set_number: number;
   reps: number;
   weight_kg: number;
+  rir?: RIR;
   rpe?: number;
   completed: boolean;
   rest_seconds: number;
@@ -115,12 +119,17 @@ export interface PersonalRecord {
   date: string;
 }
 
-export type ProgressionAction = 'increase_weight' | 'maintain' | 'deload';
+export type ProgressionAction =
+  | 'increase_weight'
+  | 'maintain_high_effort'
+  | 'maintain_more_reps'
+  | 'deload';
 
 export interface ProgressionSuggestion {
   action: ProgressionAction;
-  new_weight: number;
+  new_weight_kg: number;
   message: string;
+  reasoning: string;
 }
 
 export interface Achievement {

@@ -15,6 +15,7 @@ interface ProgressState {
   streak: number;
   bestStreak: number;
   lastWorkoutDate: string | null;
+  lastDeloadDate: string | null;
   bodyWeight: BodyWeightEntry[];
 
   saveSession: (session: WorkoutSession) => void;
@@ -23,6 +24,7 @@ interface ProgressState {
   getExerciseHistory: (exerciseId: string) => WorkoutSession[];
   calculateStreak: () => void;
   addBodyWeight: (entry: BodyWeightEntry) => void;
+  setLastDeloadDate: (date: string) => void;
 }
 
 const DEFAULT_ACHIEVEMENTS: Achievement[] = [
@@ -43,6 +45,7 @@ export const useProgressStore = create<ProgressState>()(
       streak: 0,
       bestStreak: 0,
       lastWorkoutDate: null,
+      lastDeloadDate: null,
       bodyWeight: [],
 
       saveSession: (session) => {
@@ -104,6 +107,8 @@ export const useProgressStore = create<ProgressState>()(
           const filtered = state.bodyWeight.filter((e) => e.date !== entry.date);
           return { bodyWeight: [...filtered, entry].sort((a, b) => a.date.localeCompare(b.date)) };
         }),
+
+      setLastDeloadDate: (date) => set({ lastDeloadDate: date }),
     }),
     {
       name: 'fitprogress-progress',
