@@ -8,6 +8,7 @@ import {
   TextInput,
   Alert,
   Switch,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
@@ -19,6 +20,7 @@ import { ModeToggle } from '../../components/ui/ModeToggle';
 import { Card } from '../../components/ui/Card';
 import { COLORS, SPACING, FONT, RADIUS } from '../../constants/theme';
 import { Equipment } from '../../types';
+import { exportData, importData } from '../../lib/backup';
 
 const HOME_EQUIPMENT_LIST: { id: Equipment; label: string; icon: string }[] = [
   { id: 'dumbbells', label: 'Mancuernas regulables', icon: '🏋️' },
@@ -73,10 +75,14 @@ function SettingRow({
 
 export default function SettingsScreen() {
   const { profile, setMode, setEquipment, updateProfile } = useUserStore();
-  const { sessions, personalRecords } = useProgressStore();
-  const { routines } = useRoutineStore();
+  const progressStore = useProgressStore();
+  const routineStore = useRoutineStore();
+  const { sessions, personalRecords } = progressStore;
+  const { routines } = routineStore;
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(profile.name);
+  const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   function toggleEquipment(equip: Equipment) {
     const current = profile.home_equipment;
@@ -94,22 +100,94 @@ export default function SettingsScreen() {
   function handleResetData() {
     Alert.alert(
       'Resetear todos los datos',
-      'Esto eliminará todo tu historial, rutinas y PRs. Esta acción no se puede deshacer.',
+      'Esto eliminará todo tu historial, rutinas y PRs. Tu perfil se mantendrá. Esta acción no se puede deshacer.',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Resetear',
           style: 'destructive',
           onPress: () => {
-            Alert.alert('En desarrollo', 'Esta función estará disponible en la Fase 5.');
+            useProgressStore.setState({
+              sessions: [],
+              personalRecords: {},
+              achievements: useProgressStore.getState().achievements.map((a) => ({
+                ...a, unlocked: false, unlocked_at: undefined,
+              })),
+              streak: 0,
+              bestStreak: 0,
+              lastWorkoutDate: null,
+              bodyWeight: [],
+            });
+            useRoutineStore.setState({ routines: [] });
+            Alert.alert('Listo', 'Todos los datos han sido eliminados.');
           },
         },
       ]
     );
   }
 
-  function handleExport() {
-    Alert.alert('En desarrollo', 'Exportar datos estará disponible en la Fase 5.');
+  async function handleExport() {
+    setExporting(true);
+    try {
+      await exportData(
+        useUserStore.getState().profile,
+        useRoutineStore.getState().routines,
+        {
+          sessions: progressStore.sessions,
+          personalRecords: progressStore.personalRecords,
+          achievements: progressStore.achievements,
+          bodyWeight: progressStore.bodyWeight,
+          streak: progressStore.streak,
+          bestStreak: progressStore.bestStreak,
+        }
+      );
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Error al exportar';
+      Alert.alert('Error', msg);
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function handleImport() {
+    Alert.alert(
+      'Importar datos',
+      'Esto reemplazará tus rutinas e historial actuales con los del archivo de backup. Tu perfil no se modificará.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Importar',
+          onPress: async () => {
+            setImporting(true);
+            try {
+              const backup = await importData();
+              if (!backup) return;
+              if (Array.isArray(backup.routines)) {
+                useRoutineStore.setState({ routines: backup.routines as never });
+              }
+              if (backup.progress && typeof backup.progress === 'object') {
+                const p = backup.progress as Record<string, unknown>;
+                useProgressStore.setState({
+                  sessions: (p.sessions as never) ?? [],
+                  personalRecords: (p.personalRecords as never) ?? {},
+                  achievements: (p.achievements as never) ?? useProgressStore.getState().achievements,
+                  bodyWeight: (p.bodyWeight as never) ?? [],
+                  streak: (p.streak as number) ?? 0,
+                  bestStreak: (p.bestStreak as number) ?? 0,
+                  lastWorkoutDate: (p.lastWorkoutDate as string | null) ?? null,
+                });
+              }
+              Alert.alert('¡Importado!', 'Los datos se restauraron correctamente.');
+            } catch (e: unknown) {
+              const msg = e instanceof Error ? e.message : 'Error al importar';
+              Alert.alert('Error', msg);
+            } finally {
+              setImporting(false);
+            }
+          },
+        },
+      ]
+    );
   }
 
   return (
@@ -246,7 +324,21 @@ export default function SettingsScreen() {
         {/* Datos */}
         <Text style={styles.sectionTitle}>Datos</Text>
         <Card padding={0}>
-          <SettingRow icon="📤" label="Exportar mis datos" onPress={handleExport} />
+          <TouchableOpacity style={styles.settingRow} onPress={handleExport} activeOpacity={0.7} disabled={exporting}>
+            <Text style={styles.settingIcon}>📤</Text>
+            <Text style={styles.settingLabel}>Exportar mis datos</Text>
+            {exporting ? <ActivityIndicator size="small" color={COLORS.primary} /> : (
+              <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+            )}
+          </TouchableOpacity>
+          <View style={styles.divider} />
+          <TouchableOpacity style={styles.settingRow} onPress={handleImport} activeOpacity={0.7} disabled={importing}>
+            <Text style={styles.settingIcon}>📥</Text>
+            <Text style={styles.settingLabel}>Importar backup</Text>
+            {importing ? <ActivityIndicator size="small" color={COLORS.primary} /> : (
+              <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+            )}
+          </TouchableOpacity>
           <View style={styles.divider} />
           <SettingRow icon="🗑️" label="Resetear todos los datos" onPress={handleResetData} danger />
         </Card>
@@ -254,7 +346,7 @@ export default function SettingsScreen() {
         {/* Info */}
         <View style={styles.appInfo}>
           <Text style={styles.appName}>FitProgress</Text>
-          <Text style={styles.appVersion}>v1.0 — Fase 2</Text>
+          <Text style={styles.appVersion}>v1.0 — Fase 5</Text>
         </View>
 
         <View style={{ height: 40 }} />
