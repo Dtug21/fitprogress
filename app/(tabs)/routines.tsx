@@ -1,21 +1,239 @@
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useRoutineStore } from '../../stores/useRoutineStore';
+import { useUserStore } from '../../stores/useUserStore';
+import { Card } from '../../components/ui/Card';
+import { Badge } from '../../components/ui/Badge';
+import { COLORS, SPACING, FONT, RADIUS } from '../../constants/theme';
+import { getDayName } from '../../utils/formatters';
+import { exercises } from '../../data/exercises';
+import { generateId } from '../../utils/calculations';
+import { Routine } from '../../types';
+
+const MUSCLE_LABELS: Record<string, string> = {
+  chest: 'Pecho', back: 'Espalda', shoulders: 'Hombros',
+  biceps: 'Bíceps', triceps: 'Tríceps', legs: 'Piernas',
+  quads: 'Cuádriceps', hamstrings: 'Isquios', glutes: 'Glúteos',
+  calves: 'Gemelos', core: 'Core', cardio: 'Cardio', full_body: 'Full Body',
+};
 
 export default function RoutinesScreen() {
+  const router = useRouter();
+  const { routines, addRoutine, deleteRoutine } = useRoutineStore();
+  const { profile } = useUserStore();
+
+  function handleNewRoutine() {
+    const now = new Date().toISOString();
+    const newRoutine: Routine = {
+      id: generateId(),
+      name: 'Nueva rutina',
+      day_of_week: [],
+      mode: profile.mode,
+      exercises: [],
+      created_at: now,
+      updated_at: now,
+    };
+    addRoutine(newRoutine);
+    router.push(`/routine/${newRoutine.id}`);
+  }
+
+  function handleDelete(id: string, name: string) {
+    Alert.alert(
+      'Eliminar rutina',
+      `¿Seguro que quieres eliminar "${name}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Eliminar', style: 'destructive', onPress: () => deleteRoutine(id) },
+      ]
+    );
+  }
+
+  const DAY_NAMES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.center}>
-        <Text style={styles.emoji}>📋</Text>
-        <Text style={styles.title}>Rutinas</Text>
-        <Text style={styles.sub}>Mis rutinas — Fase 2</Text>
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.headerBar}>
+        <Text style={styles.pageTitle}>Mis Rutinas</Text>
+        <Text style={styles.pageCount}>{routines.length} rutinas</Text>
       </View>
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {routines.length === 0 ? (
+          <View style={styles.empty}>
+            <Text style={styles.emptyIcon}>📋</Text>
+            <Text style={styles.emptyTitle}>Sin rutinas todavía</Text>
+            <Text style={styles.emptySub}>
+              Toca el botón + para crear tu primera rutina de entrenamiento.
+            </Text>
+          </View>
+        ) : (
+          routines.map((routine) => {
+            const muscleGroups = [
+              ...new Set(
+                routine.exercises
+                  .map((re) => exercises.find((e) => e.id === re.exercise_id)?.muscle_group)
+                  .filter(Boolean)
+              ),
+            ].slice(0, 4);
+
+            return (
+              <TouchableOpacity
+                key={routine.id}
+                activeOpacity={0.8}
+                onPress={() => router.push(`/routine/${routine.id}`)}
+                onLongPress={() => handleDelete(routine.id, routine.name)}
+              >
+                <Card padding={SPACING.md} style={styles.routineCard}>
+                  <View style={styles.routineTop}>
+                    <View style={styles.routineInfo}>
+                      <Text style={styles.routineName}>{routine.name}</Text>
+                      <View style={styles.routineMeta}>
+                        <Text style={styles.metaText}>
+                          {routine.exercises.length} ejercicios
+                        </Text>
+                        <Text style={styles.metaDot}>·</Text>
+                        <Text style={styles.metaText}>
+                          {routine.mode === 'home' ? '🏠 Casa' : '🏋️ Gym'}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.routineActions}>
+                      <Badge
+                        label={routine.mode === 'home' ? 'Casa' : 'Gym'}
+                        variant={routine.mode === 'home' ? 'primary' : 'success'}
+                      />
+                      <Ionicons
+                        name="chevron-forward"
+                        size={18}
+                        color={COLORS.textMuted}
+                        style={{ marginTop: 6 }}
+                      />
+                    </View>
+                  </View>
+
+                  {/* Días */}
+                  {routine.day_of_week.length > 0 && (
+                    <View style={styles.daysRow}>
+                      {DAY_NAMES.map((d, i) => (
+                        <View
+                          key={i}
+                          style={[
+                            styles.dayPill,
+                            routine.day_of_week.includes(i) && styles.dayPillActive,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.dayText,
+                              routine.day_of_week.includes(i) && styles.dayTextActive,
+                            ]}
+                          >
+                            {d}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
+                  {/* Músculos */}
+                  {muscleGroups.length > 0 && (
+                    <View style={styles.muscleRow}>
+                      {muscleGroups.map((m) => (
+                        <Badge
+                          key={m}
+                          label={MUSCLE_LABELS[m as string] ?? (m as string)}
+                          variant="neutral"
+                        />
+                      ))}
+                    </View>
+                  )}
+                </Card>
+              </TouchableOpacity>
+            );
+          })
+        )}
+        <View style={{ height: 100 }} />
+      </ScrollView>
+
+      {/* FAB */}
+      <TouchableOpacity style={styles.fab} onPress={handleNewRoutine} activeOpacity={0.85}>
+        <Ionicons name="add" size={30} color="#000" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  emoji: { fontSize: 48, marginBottom: 12 },
-  title: { color: '#FFFFFF', fontSize: 24, fontWeight: '700', marginBottom: 8 },
-  sub: { color: '#6B7280', fontSize: 14 },
+  safe: { flex: 1, backgroundColor: COLORS.bg },
+  headerBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.sm,
+  },
+  pageTitle: { color: COLORS.textPrimary, fontSize: FONT.xxl, fontWeight: '800' },
+  pageCount: { color: COLORS.textMuted, fontSize: FONT.base },
+
+  scroll: { flex: 1 },
+  content: { paddingHorizontal: SPACING.lg, gap: SPACING.sm, paddingTop: SPACING.sm },
+
+  empty: { alignItems: 'center', paddingTop: 80 },
+  emptyIcon: { fontSize: 56, marginBottom: SPACING.md },
+  emptyTitle: { color: COLORS.textPrimary, fontSize: FONT.lg, fontWeight: '700', marginBottom: 8 },
+  emptySub: { color: COLORS.textMuted, fontSize: FONT.base, textAlign: 'center', paddingHorizontal: SPACING.xl },
+
+  routineCard: { marginBottom: 0 },
+  routineTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  routineInfo: { flex: 1 },
+  routineName: { color: COLORS.textPrimary, fontSize: FONT.md, fontWeight: '700' },
+  routineMeta: { flexDirection: 'row', gap: 6, marginTop: 4 },
+  metaText: { color: COLORS.textMuted, fontSize: FONT.sm },
+  metaDot: { color: COLORS.textMuted, fontSize: FONT.sm },
+  routineActions: { alignItems: 'flex-end', gap: 4 },
+
+  daysRow: { flexDirection: 'row', gap: 4, marginTop: SPACING.sm },
+  dayPill: {
+    width: 36,
+    height: 28,
+    borderRadius: RADIUS.sm,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dayPillActive: { backgroundColor: COLORS.primaryDim },
+  dayText: { color: COLORS.textMuted, fontSize: 11, fontWeight: '600' },
+  dayTextActive: { color: COLORS.primary },
+  muscleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: SPACING.sm },
+
+  fab: {
+    position: 'absolute',
+    bottom: 100,
+    right: SPACING.lg,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8,
+  },
 });
