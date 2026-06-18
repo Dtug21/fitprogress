@@ -1,12 +1,12 @@
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 
-export default function HomeScreen() {
+export default function ProgressScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.center}>
-        <Text style={styles.emoji}>🏠</Text>
-        <Text style={styles.title}>Inicio</Text>
-        <Text style={styles.sub}>Dashboard — Fase 2</Text>
+        <Text style={styles.emoji}>📈</Text>
+        <Text style={styles.title}>Progreso</Text>
+        <Text style={styles.sub}>Gráficos y estadísticas — Fase 4</Text>
       </View>
     </SafeAreaView>
   );

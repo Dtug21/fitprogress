@@ -1,12 +1,12 @@
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 
-export default function HomeScreen() {
+export default function WorkoutScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.center}>
-        <Text style={styles.emoji}>🏠</Text>
-        <Text style={styles.title}>Inicio</Text>
-        <Text style={styles.sub}>Dashboard — Fase 2</Text>
+        <Text style={styles.emoji}>🏋️</Text>
+        <Text style={styles.title}>Entrenamiento</Text>
+        <Text style={styles.sub}>Entrenamiento activo — Fase 3</Text>
       </View>
     </SafeAreaView>
   );
