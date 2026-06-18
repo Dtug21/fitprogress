@@ -3,19 +3,26 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WorkoutSession, PersonalRecord, Achievement } from '../types';
 
+export interface BodyWeightEntry {
+  date: string;
+  weight_kg: number;
+}
+
 interface ProgressState {
   sessions: WorkoutSession[];
   personalRecords: Record<string, PersonalRecord>;
   achievements: Achievement[];
   streak: number;
+  bestStreak: number;
   lastWorkoutDate: string | null;
+  bodyWeight: BodyWeightEntry[];
 
   saveSession: (session: WorkoutSession) => void;
   updatePersonalRecord: (exerciseId: string, pr: PersonalRecord) => void;
   unlockAchievement: (id: string) => void;
   getExerciseHistory: (exerciseId: string) => WorkoutSession[];
   calculateStreak: () => void;
-  initAchievements: () => void;
+  addBodyWeight: (entry: BodyWeightEntry) => void;
 }
 
 const DEFAULT_ACHIEVEMENTS: Achievement[] = [
@@ -34,7 +41,9 @@ export const useProgressStore = create<ProgressState>()(
       personalRecords: {},
       achievements: DEFAULT_ACHIEVEMENTS,
       streak: 0,
+      bestStreak: 0,
       lastWorkoutDate: null,
+      bodyWeight: [],
 
       saveSession: (session) => {
         set((state) => ({
@@ -42,6 +51,13 @@ export const useProgressStore = create<ProgressState>()(
           lastWorkoutDate: session.date,
         }));
         get().calculateStreak();
+        // Desbloquear logros automáticamente
+        const total = get().sessions.length;
+        if (total === 1) get().unlockAchievement('first_workout');
+        if (total >= 10) get().unlockAchievement('workouts_10');
+        const streak = get().streak;
+        if (streak >= 7) get().unlockAchievement('streak_7');
+        if (streak >= 30) get().unlockAchievement('streak_30');
       },
 
       updatePersonalRecord: (exerciseId, pr) =>
@@ -64,11 +80,8 @@ export const useProgressStore = create<ProgressState>()(
         ),
 
       calculateStreak: () => {
-        const { sessions } = get();
-        if (sessions.length === 0) {
-          set({ streak: 0 });
-          return;
-        }
+        const { sessions, bestStreak } = get();
+        if (sessions.length === 0) { set({ streak: 0 }); return; }
 
         const dates = [...new Set(sessions.map((s) => s.date))].sort().reverse();
         let streak = 0;
@@ -80,22 +93,16 @@ export const useProgressStore = create<ProgressState>()(
           const diff = Math.floor(
             (current.getTime() - sessionDate.getTime()) / (1000 * 60 * 60 * 24)
           );
-          if (diff <= 1) {
-            streak++;
-            current = sessionDate;
-          } else {
-            break;
-          }
+          if (diff <= 1) { streak++; current = sessionDate; }
+          else break;
         }
-        set({ streak });
+        set({ streak, bestStreak: Math.max(streak, bestStreak) });
       },
 
-      initAchievements: () =>
+      addBodyWeight: (entry) =>
         set((state) => {
-          if (state.achievements.length === 0) {
-            return { achievements: DEFAULT_ACHIEVEMENTS };
-          }
-          return state;
+          const filtered = state.bodyWeight.filter((e) => e.date !== entry.date);
+          return { bodyWeight: [...filtered, entry].sort((a, b) => a.date.localeCompare(b.date)) };
         }),
     }),
     {
