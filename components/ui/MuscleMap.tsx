@@ -1,12 +1,20 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { useState, useMemo } from 'react';
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import Body from 'react-native-body-highlighter';
 import { MuscleGroup } from '../../types';
-import { COLORS, FONT } from '../../constants/theme';
+import { COLORS, FONT, SPACING, RADIUS } from '../../constants/theme';
 
 type BodySlug =
   | 'trapezius' | 'triceps' | 'forearm' | 'adductors' | 'calves' | 'neck'
   | 'deltoids' | 'chest' | 'biceps' | 'abs' | 'quadriceps' | 'obliques'
   | 'tibialis' | 'upper-back' | 'lower-back' | 'hamstring' | 'gluteal';
+
+const BODY_BASE_WIDTH = 200;
+const BODY_BASE_HEIGHT = 400;
+const COLUMN_GAP = 6;
+
+export const MUSCLE_MAP_PRIMARY = '#CC1100';
+export const MUSCLE_MAP_SECONDARY = '#D97000';
 
 const PRIMARY_SLUGS: Record<MuscleGroup, BodySlug[]> = {
   chest:      ['chest'],
@@ -40,13 +48,39 @@ const SECONDARY_SLUGS: Record<MuscleGroup, BodySlug[]> = {
   full_body:  ['deltoids', 'biceps', 'hamstring', 'abs'],
 };
 
-const PRIMARY_COLOR   = '#CC1100';
-const SECONDARY_COLOR = '#D97000';
+function computeScale(containerWidth: number): number {
+  if (containerWidth <= 0) return 0.65;
+  const columnWidth = (containerWidth - COLUMN_GAP) / 2;
+  const scale = columnWidth / BODY_BASE_WIDTH;
+  return Math.min(0.78, Math.max(0.42, scale * 0.98));
+}
 
-export function MuscleMap({ primary, secondary = [] }: {
+interface MuscleMapProps {
   primary: MuscleGroup;
   secondary?: MuscleGroup[];
-}) {
+  primaryLabel?: string;
+  secondaryLabel?: string;
+}
+
+export function MuscleMap({
+  primary,
+  secondary = [],
+  primaryLabel,
+  secondaryLabel,
+}: MuscleMapProps) {
+  const { width: screenWidth } = useWindowDimensions();
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  const effectiveWidth = containerWidth || Math.max(screenWidth - 64, 280);
+
+  const scale = useMemo(
+    () => computeScale(effectiveWidth),
+    [effectiveWidth],
+  );
+
+  const bodyWidth = BODY_BASE_WIDTH * scale;
+  const bodyHeight = BODY_BASE_HEIGHT * scale;
+
   const partsMap = new Map<BodySlug, 1 | 2>();
 
   secondary.forEach((m) => {
@@ -59,38 +93,51 @@ export function MuscleMap({ primary, secondary = [] }: {
   const data = Array.from(partsMap.entries()).map(([slug, intensity]) => ({
     slug,
     intensity,
-    color: intensity === 2 ? PRIMARY_COLOR : SECONDARY_COLOR,
+    color: intensity === 2 ? MUSCLE_MAP_PRIMARY : MUSCLE_MAP_SECONDARY,
   }));
 
   const commonProps = {
     data,
-    scale: 1.4,
-    colors: [SECONDARY_COLOR, PRIMARY_COLOR],
+    scale,
+    colors: [MUSCLE_MAP_SECONDARY, MUSCLE_MAP_PRIMARY],
     border: '#2A3A4A',
     defaultFill: '#1C2B3A',
   };
 
+  const BodyPanel = ({ side, label }: { side: 'front' | 'back'; label: string }) => (
+    <View style={[styles.column, { maxWidth: (effectiveWidth - COLUMN_GAP) / 2 }]}>
+      <View style={[styles.svgBox, { width: bodyWidth, height: bodyHeight }]}>
+        <Body {...commonProps} side={side} />
+      </View>
+      <Text style={styles.sideLabel}>{label}</Text>
+    </View>
+  );
+
   return (
-    <View style={styles.wrap}>
-      <View style={styles.panel}>
-        <Body {...commonProps} side="front" />
-        <Text style={styles.label}>FRONTAL</Text>
-      </View>
-
-      <View style={styles.legend}>
-        <View style={styles.legendRow}>
-          <View style={[styles.dot, { backgroundColor: PRIMARY_COLOR }]} />
-          <Text style={styles.legendText}>Principal</Text>
+    <View
+      style={styles.wrap}
+      onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+    >
+      {(primaryLabel || secondaryLabel) ? (
+        <View style={styles.nameLegend}>
+          {primaryLabel ? (
+            <View style={styles.nameChip}>
+              <View style={[styles.dot, { backgroundColor: MUSCLE_MAP_PRIMARY }]} />
+              <Text style={styles.namePrimary} numberOfLines={1}>{primaryLabel}</Text>
+            </View>
+          ) : null}
+          {secondaryLabel ? (
+            <View style={styles.nameChip}>
+              <View style={[styles.dot, { backgroundColor: MUSCLE_MAP_SECONDARY }]} />
+              <Text style={styles.nameSecondary} numberOfLines={2}>{secondaryLabel}</Text>
+            </View>
+          ) : null}
         </View>
-        <View style={styles.legendRow}>
-          <View style={[styles.dot, { backgroundColor: SECONDARY_COLOR }]} />
-          <Text style={styles.legendText}>Secundario</Text>
-        </View>
-      </View>
+      ) : null}
 
-      <View style={styles.panel}>
-        <Body {...commonProps} side="back" />
-        <Text style={styles.label}>POSTERIOR</Text>
+      <View style={styles.bodiesRow}>
+        <BodyPanel side="front" label="FRONTAL" />
+        <BodyPanel side="back" label="POSTERIOR" />
       </View>
     </View>
   );
@@ -98,20 +145,67 @@ export function MuscleMap({ primary, secondary = [] }: {
 
 const styles = StyleSheet.create({
   wrap: {
+    width: '100%',
+    overflow: 'hidden',
+    gap: SPACING.sm,
+  },
+  nameLegend: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.sm,
+    alignItems: 'center',
+  },
+  nameChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
+    gap: 6,
+    flexShrink: 1,
+    maxWidth: '100%',
   },
-  panel: { alignItems: 'center', gap: 6 },
-  label: {
-    color: COLORS.textMuted,
-    fontSize: 9,
+  namePrimary: {
+    color: COLORS.textPrimary,
+    fontSize: FONT.sm,
     fontWeight: '700',
-    letterSpacing: 2,
+    flexShrink: 1,
   },
-  legend: { gap: 10, paddingHorizontal: 2 },
-  legendRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  dot: { width: 10, height: 10, borderRadius: 5 },
-  legendText: { color: COLORS.textMuted, fontSize: FONT.sm },
+  nameSecondary: {
+    color: COLORS.textSecondary,
+    fontSize: FONT.sm,
+    flexShrink: 1,
+  },
+  bodiesRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    width: '100%',
+    overflow: 'hidden',
+    gap: COLUMN_GAP,
+  },
+  column: {
+    flex: 1,
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  svgBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0A1520',
+    borderRadius: RADIUS.sm,
+    borderWidth: 1,
+    borderColor: '#2A3A4A',
+    overflow: 'hidden',
+  },
+  sideLabel: {
+    color: COLORS.textMuted,
+    fontSize: 8,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    marginTop: 4,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    flexShrink: 0,
+  },
 });

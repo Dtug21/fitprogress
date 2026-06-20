@@ -238,27 +238,15 @@ export default function ExerciseDetailScreen() {
         {/* Mapa muscular */}
         <View style={styles.muscleMapCard}>
           <Text style={styles.muscleMapTitle}>Músculos trabajados</Text>
-          <View style={styles.muscleMapLabels}>
-            <View style={styles.primaryLabel}>
-              <Text style={styles.primaryDot}>●</Text>
-              <Text style={styles.primaryMuscleText}>
-                {MUSCLE_LABELS[exercise.muscle_group] ?? exercise.muscle_group}
-              </Text>
-            </View>
-            {exercise.secondary_muscles.length > 0 && (
-              <View style={styles.secondaryLabel}>
-                <Text style={styles.secondaryDot}>●</Text>
-                <Text style={styles.secondaryMuscleText}>
-                  {exercise.secondary_muscles
-                    .map((m) => MUSCLE_LABELS[m] ?? m)
-                    .join(', ')}
-                </Text>
-              </View>
-            )}
-          </View>
           <MuscleMap
             primary={exercise.muscle_group}
             secondary={exercise.secondary_muscles}
+            primaryLabel={MUSCLE_LABELS[exercise.muscle_group] ?? exercise.muscle_group}
+            secondaryLabel={
+              exercise.secondary_muscles.length > 0
+                ? exercise.secondary_muscles.map((m) => MUSCLE_LABELS[m] ?? m).join(', ')
+                : undefined
+            }
           />
         </View>
 
@@ -613,22 +601,14 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     padding: SPACING.md,
     gap: SPACING.sm,
-    alignItems: 'center',
+    width: '100%',
+    overflow: 'hidden',
   },
   muscleMapTitle: {
     color: COLORS.textPrimary,
     fontSize: FONT.base,
     fontWeight: '800',
     alignSelf: 'flex-start',
+    marginBottom: 2,
   },
-  muscleMapLabels: {
-    alignSelf: 'flex-start',
-    gap: 4,
-  },
-  primaryLabel: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  primaryDot: { color: '#38BDF8', fontSize: 14 },
-  primaryMuscleText: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '700' },
-  secondaryLabel: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  secondaryDot: { color: '#FCD34D', fontSize: 14 },
-  secondaryMuscleText: { color: COLORS.textSecondary, fontSize: FONT.sm },
 });

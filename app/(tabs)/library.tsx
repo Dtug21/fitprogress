@@ -175,7 +175,8 @@ export default function LibraryScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.muscleScroll}
+        style={styles.muscleScrollView}
+        contentContainerStyle={styles.muscleScrollContent}
       >
         {MUSCLE_FILTERS.map((f) => (
           <TouchableOpacity
@@ -184,7 +185,10 @@ export default function LibraryScreen() {
             onPress={() => setMuscleFilter(f.id)}
             activeOpacity={0.7}
           >
-            <Text style={[styles.muscleChipLabel, muscleFilter === f.id && styles.muscleChipLabelActive]}>
+            <Text
+              style={[styles.muscleChipLabel, muscleFilter === f.id && styles.muscleChipLabelActive]}
+              numberOfLines={1}
+            >
               {f.label}
             </Text>
           </TouchableOpacity>
@@ -193,6 +197,7 @@ export default function LibraryScreen() {
 
       {/* Lista */}
       <FlatList
+        style={styles.list}
         data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
@@ -265,19 +270,38 @@ const styles = StyleSheet.create({
   modeChipLabel: { color: COLORS.textMuted, fontSize: FONT.sm, fontWeight: '500' },
   modeChipLabelActive: { color: COLORS.primary },
 
-  muscleScroll: { paddingHorizontal: SPACING.lg, paddingBottom: SPACING.sm, gap: 6 },
+  muscleScrollView: {
+    flexGrow: 0,
+    flexShrink: 0,
+    marginBottom: SPACING.sm,
+  },
+  muscleScrollContent: {
+    paddingHorizontal: SPACING.lg,
+    alignItems: 'center',
+    paddingVertical: 2,
+  },
   muscleChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    minHeight: 38,
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 20,
     backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderStrong,
+    marginRight: 8,
   },
   muscleChipActive: { backgroundColor: COLORS.primaryDim, borderColor: COLORS.primary },
-  muscleChipLabel: { color: COLORS.textMuted, fontSize: FONT.sm, fontWeight: '600' },
+  muscleChipLabel: {
+    color: COLORS.textSecondary,
+    fontSize: FONT.base,
+    fontWeight: '600',
+    lineHeight: 18,
+  },
   muscleChipLabelActive: { color: COLORS.primary },
 
+  list: { flex: 1 },
   resultCount: { color: COLORS.textMuted, fontSize: FONT.sm, paddingHorizontal: SPACING.lg, paddingBottom: 4 },
 
   listContent: { paddingHorizontal: SPACING.lg, paddingBottom: 100, gap: 8 },
