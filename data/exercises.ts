@@ -1,6 +1,7 @@
 import { Exercise } from '../types';
+import EXERCISE_GIFS from './exercise-gifs';
 
-export const exercises: Exercise[] = [
+const RAW_EXERCISES: Exercise[] = [
   // ─────────────────────────────────────────────
   // PECHO — CASA
   // ─────────────────────────────────────────────
@@ -1145,6 +1146,10 @@ export const exercises: Exercise[] = [
     progression_from: 'treadmill',
   },
 ];
+
+export const exercises: Exercise[] = RAW_EXERCISES.map((ex) =>
+  EXERCISE_GIFS[ex.id] ? { ...ex, gifSource: EXERCISE_GIFS[ex.id] } : ex
+);
 
 export function getExerciseById(id: string): Exercise | undefined {
   return exercises.find((e) => e.id === id);

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useState, useRef } from 'react';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useUserStore } from '../../stores/useUserStore';
 import { useRoutineStore } from '../../stores/useRoutineStore';
 import { COLORS, SPACING, FONT, RADIUS } from '../../constants/theme';
@@ -18,19 +19,20 @@ import { Equipment } from '../../types';
 import { buildHomeFullBody, buildGymUpperLower } from '../../lib/defaultRoutines';
 
 type Step = 'welcome' | 'name' | 'mode' | 'equipment' | 'done';
+type IconName = keyof typeof Ionicons.glyphMap;
 
-const HOME_EQUIPMENT_LIST: { id: Equipment; label: string; icon: string }[] = [
-  { id: 'dumbbells', label: 'Mancuernas regulables', icon: '🏋️' },
-  { id: 'adjustable_bench', label: 'Banco inclinable', icon: '🪑' },
-  { id: 'straight_barbell', label: 'Barra plana', icon: '—' },
-  { id: 'ez_bar', label: 'Barra Z (EZ)', icon: 'Z' },
-  { id: 'w_bar', label: 'Barra W', icon: 'W' },
-  { id: 'long_bands', label: 'Bandas elásticas largas', icon: '🔴' },
-  { id: 'short_bands', label: 'Mini bandas', icon: '🟠' },
-  { id: 'ab_wheel', label: 'Rueda abdominal', icon: '⭕' },
-  { id: 'jump_rope', label: 'Cuerda para saltar', icon: '🪢' },
-  { id: 'hand_grippers', label: 'Hand grippers', icon: '✊' },
-  { id: 'bodyweight', label: 'Peso corporal', icon: '🧍' },
+const HOME_EQUIPMENT_LIST: { id: Equipment; label: string; icon: IconName }[] = [
+  { id: 'dumbbells', label: 'Mancuernas regulables', icon: 'barbell-outline' },
+  { id: 'adjustable_bench', label: 'Banco inclinable', icon: 'bed-outline' },
+  { id: 'straight_barbell', label: 'Barra plana', icon: 'remove-outline' },
+  { id: 'ez_bar', label: 'Barra Z (EZ)', icon: 'git-commit-outline' },
+  { id: 'w_bar', label: 'Barra W', icon: 'git-commit-outline' },
+  { id: 'long_bands', label: 'Bandas elásticas largas', icon: 'pulse-outline' },
+  { id: 'short_bands', label: 'Mini bandas', icon: 'ellipse-outline' },
+  { id: 'ab_wheel', label: 'Rueda abdominal', icon: 'disc-outline' },
+  { id: 'jump_rope', label: 'Cuerda para saltar', icon: 'infinite-outline' },
+  { id: 'hand_grippers', label: 'Hand grippers', icon: 'hand-left-outline' },
+  { id: 'bodyweight', label: 'Peso corporal', icon: 'body-outline' },
 ];
 
 export default function OnboardingScreen() {
@@ -98,7 +100,9 @@ export default function OnboardingScreen() {
         {/* ===== BIENVENIDA ===== */}
         {step === 'welcome' && (
           <View style={styles.centered}>
-            <Text style={styles.logo}>💪</Text>
+            <View style={styles.logoChip}>
+              <Ionicons name="barbell" size={44} color={COLORS.primary} />
+            </View>
             <Text style={styles.appName}>FitProgress</Text>
             <Text style={styles.tagline}>Tu entrenamiento. Tu progreso.</Text>
             <Text style={styles.description}>
@@ -117,7 +121,9 @@ export default function OnboardingScreen() {
         {/* ===== NOMBRE ===== */}
         {step === 'name' && (
           <View style={styles.stepContainer}>
-            <Text style={styles.stepEmoji}>👋</Text>
+            <View style={styles.stepIconChip}>
+              <Ionicons name="person-outline" size={28} color={COLORS.primary} />
+            </View>
             <Text style={styles.stepTitle}>¿Cómo te llamas?</Text>
             <Text style={styles.stepSub}>
               Te llamaremos así en la app. Puedes cambiarlo después.
@@ -151,7 +157,9 @@ export default function OnboardingScreen() {
         {/* ===== MODO ===== */}
         {step === 'mode' && (
           <View style={styles.stepContainer}>
-            <Text style={styles.stepEmoji}>🏋️</Text>
+            <View style={styles.stepIconChip}>
+              <Ionicons name="location-outline" size={28} color={COLORS.primary} />
+            </View>
             <Text style={styles.stepTitle}>¿Dónde entrenas principalmente?</Text>
             <Text style={styles.stepSub}>Esto filtrará los ejercicios sugeridos. Puedes cambiarlo en cualquier momento.</Text>
 
@@ -161,7 +169,7 @@ export default function OnboardingScreen() {
                 onPress={() => setModeLocal('home')}
                 activeOpacity={0.8}
               >
-                <Text style={styles.modeIcon}>🏠</Text>
+                <Ionicons name="home-outline" size={34} color={mode === 'home' ? COLORS.primary : COLORS.textSecondary} style={styles.modeIcon} />
                 <Text style={[styles.modeLabel, mode === 'home' && styles.modeLabelActive]}>En casa</Text>
                 <Text style={styles.modeDesc}>Mancuernas, bandas,{'\n'}peso corporal</Text>
               </TouchableOpacity>
@@ -170,7 +178,7 @@ export default function OnboardingScreen() {
                 onPress={() => setModeLocal('gym')}
                 activeOpacity={0.8}
               >
-                <Text style={styles.modeIcon}>🏋️</Text>
+                <Ionicons name="barbell-outline" size={34} color={mode === 'gym' ? COLORS.primary : COLORS.textSecondary} style={styles.modeIcon} />
                 <Text style={[styles.modeLabel, mode === 'gym' && styles.modeLabelActive]}>Gimnasio</Text>
                 <Text style={styles.modeDesc}>Máquinas, barras,{'\n'}poleas y más</Text>
               </TouchableOpacity>
@@ -194,7 +202,9 @@ export default function OnboardingScreen() {
         {/* ===== EQUIPAMIENTO ===== */}
         {step === 'equipment' && (
           <View style={styles.stepContainerScroll}>
-            <Text style={styles.stepEmoji}>🛠️</Text>
+            <View style={styles.stepIconChip}>
+              <Ionicons name="construct-outline" size={28} color={COLORS.primary} />
+            </View>
             <Text style={styles.stepTitle}>¿Qué equipo tienes en casa?</Text>
             <Text style={styles.stepSub}>Marca lo que tienes para que los ejercicios sean compatibles.</Text>
 
@@ -206,7 +216,7 @@ export default function OnboardingScreen() {
                   onPress={() => toggleEquipment(item.id)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.equipIcon}>{item.icon}</Text>
+                  <Ionicons name={item.icon} size={19} color={COLORS.textSecondary} style={styles.equipIcon} />
                   <Text style={styles.equipLabel}>{item.label}</Text>
                   <Switch
                     value={equipment.includes(item.id)}
@@ -237,7 +247,9 @@ export default function OnboardingScreen() {
         {/* ===== LISTO ===== */}
         {step === 'done' && (
           <View style={styles.centered}>
-            <Text style={styles.logo}>🎉</Text>
+            <View style={styles.logoChip}>
+              <Ionicons name="checkmark-circle" size={44} color={COLORS.primary} />
+            </View>
             <Text style={styles.stepTitle}>
               ¡Todo listo{name.trim() ? `, ${name.trim()}` : ''}!
             </Text>
@@ -245,11 +257,11 @@ export default function OnboardingScreen() {
               Creamos {mode === 'home' ? 'una rutina Full Body para casa' : 'dos rutinas Upper/Lower para gimnasio'} como punto de partida. Puedes editarlas cuando quieras.
             </Text>
             <View style={styles.summaryCard}>
-              <SummaryRow icon="🏋️" label="Modo" value={mode === 'home' ? 'Casa' : 'Gimnasio'} />
+              <SummaryRow icon={mode === 'home' ? 'home-outline' : 'barbell-outline'} label="Modo" value={mode === 'home' ? 'Casa' : 'Gimnasio'} />
               {mode === 'home' && (
-                <SummaryRow icon="🛠️" label="Equipamiento" value={`${equipment.length} elementos`} />
+                <SummaryRow icon="construct-outline" label="Equipamiento" value={`${equipment.length} elementos`} />
               )}
-              <SummaryRow icon="📋" label="Rutinas creadas" value={mode === 'home' ? '1' : '2'} />
+              <SummaryRow icon="list-outline" label="Rutinas creadas" value={mode === 'home' ? '1' : '2'} />
             </View>
             <TouchableOpacity
               style={styles.primaryBtn}
@@ -265,10 +277,10 @@ export default function OnboardingScreen() {
   );
 }
 
-function SummaryRow({ icon, label, value }: { icon: string; label: string; value: string }) {
+function SummaryRow({ icon, label, value }: { icon: IconName; label: string; value: string }) {
   return (
     <View style={styles.summaryRow}>
-      <Text style={styles.summaryIcon}>{icon}</Text>
+      <Ionicons name={icon} size={18} color={COLORS.textSecondary} style={styles.summaryIcon} />
       <Text style={styles.summaryLabel}>{label}</Text>
       <Text style={styles.summaryValue}>{value}</Text>
     </View>
@@ -295,8 +307,11 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
     paddingBottom: 40,
   },
-  logo: { fontSize: 72 },
-  appName: { color: COLORS.primary, fontSize: 40, fontWeight: '900', letterSpacing: -1 },
+  logoChip: {
+    width: 88, height: 88, borderRadius: RADIUS.xl,
+    backgroundColor: COLORS.primaryDim, alignItems: 'center', justifyContent: 'center', marginBottom: 8,
+  },
+  appName: { color: COLORS.primary, fontSize: 40, fontWeight: '600', letterSpacing: -1 },
   tagline: { color: COLORS.textSecondary, fontSize: FONT.lg, fontWeight: '600' },
   description: {
     color: COLORS.textMuted,
@@ -308,8 +323,12 @@ const styles = StyleSheet.create({
 
   stepContainer: { flex: 1, paddingTop: SPACING.xl, gap: SPACING.md },
   stepContainerScroll: { flex: 1, paddingTop: SPACING.xl, gap: SPACING.sm },
-  stepEmoji: { fontSize: 48 },
-  stepTitle: { color: COLORS.textPrimary, fontSize: FONT.xl, fontWeight: '800' },
+  stepIconChip: {
+    width: 64, height: 64, borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 4,
+  },
+  stepTitle: { color: COLORS.textPrimary, fontSize: FONT.xl, fontWeight: '600' },
   stepSub: { color: COLORS.textMuted, fontSize: FONT.base, lineHeight: 22 },
 
   nameInput: {
@@ -337,7 +356,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   modeCardActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
-  modeIcon: { fontSize: 36 },
+  modeIcon: { marginBottom: 4 },
   modeLabel: { color: COLORS.textSecondary, fontSize: FONT.base, fontWeight: '700' },
   modeLabelActive: { color: COLORS.primary },
   modeDesc: { color: COLORS.textMuted, fontSize: FONT.sm, textAlign: 'center', lineHeight: 18 },
@@ -351,7 +370,7 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   equipBorder: { borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  equipIcon: { fontSize: 20, width: 28, textAlign: 'center' },
+  equipIcon: { width: 28, alignItems: 'center' },
   equipLabel: { flex: 1, color: COLORS.textPrimary, fontSize: FONT.base },
 
   navRow: {
@@ -371,7 +390,7 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
   },
   primaryBtnSmall: { alignSelf: 'auto', paddingHorizontal: SPACING.lg, paddingVertical: 14 },
-  primaryBtnText: { color: '#000', fontSize: FONT.base, fontWeight: '800' },
+  primaryBtnText: { color: COLORS.accentText, fontSize: FONT.base, fontWeight: '600' },
   secondaryBtn: { paddingVertical: 14, paddingHorizontal: SPACING.sm },
   secondaryBtnText: { color: COLORS.textMuted, fontSize: FONT.base, fontWeight: '600' },
 
@@ -393,7 +412,7 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.border,
     gap: SPACING.sm,
   },
-  summaryIcon: { fontSize: 20, width: 28, textAlign: 'center' },
+  summaryIcon: { width: 28 },
   summaryLabel: { flex: 1, color: COLORS.textSecondary, fontSize: FONT.base },
   summaryValue: { color: COLORS.primary, fontSize: FONT.base, fontWeight: '700' },
 });

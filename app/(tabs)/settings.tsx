@@ -12,28 +12,32 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
+import { useRouter } from 'expo-router';
 import { useUserStore } from '../../stores/useUserStore';
 import { useProgressStore } from '../../stores/useProgressStore';
 import { useRoutineStore } from '../../stores/useRoutineStore';
 import { useWorkoutStore } from '../../stores/useWorkoutStore';
 import { ModeToggle } from '../../components/ui/ModeToggle';
 import { Card } from '../../components/ui/Card';
-import { COLORS, SPACING, FONT, RADIUS } from '../../constants/theme';
+import { COLORS, SPACING, FONT, RADIUS, WEIGHT, TRACKING, TEXT } from '../../constants/theme';
 import { Equipment } from '../../types';
 import { exportData, importData } from '../../lib/backup';
+import { exportForDashboard } from '../../lib/dashboardExport';
 
-const HOME_EQUIPMENT_LIST: { id: Equipment; label: string; icon: string }[] = [
-  { id: 'dumbbells', label: 'Mancuernas regulables', icon: '🏋️' },
-  { id: 'adjustable_bench', label: 'Banco inclinable', icon: '🪑' },
-  { id: 'straight_barbell', label: 'Barra plana', icon: '—' },
-  { id: 'ez_bar', label: 'Barra Z (EZ)', icon: 'Z' },
-  { id: 'w_bar', label: 'Barra W', icon: 'W' },
-  { id: 'long_bands', label: 'Bandas elásticas largas', icon: '🔴' },
-  { id: 'short_bands', label: 'Mini bandas', icon: '🟠' },
-  { id: 'ab_wheel', label: 'Rueda abdominal', icon: '⭕' },
-  { id: 'jump_rope', label: 'Cuerda para saltar', icon: '🪢' },
-  { id: 'hand_grippers', label: 'Hand grippers', icon: '✊' },
-  { id: 'bodyweight', label: 'Peso corporal', icon: '🧍' },
+type IconName = keyof typeof Ionicons.glyphMap;
+
+const HOME_EQUIPMENT_LIST: { id: Equipment; label: string; icon: IconName }[] = [
+  { id: 'dumbbells', label: 'Mancuernas regulables', icon: 'barbell-outline' },
+  { id: 'adjustable_bench', label: 'Banco inclinable', icon: 'bed-outline' },
+  { id: 'straight_barbell', label: 'Barra plana', icon: 'remove-outline' },
+  { id: 'ez_bar', label: 'Barra Z (EZ)', icon: 'git-commit-outline' },
+  { id: 'w_bar', label: 'Barra W', icon: 'git-commit-outline' },
+  { id: 'long_bands', label: 'Bandas elásticas largas', icon: 'pulse-outline' },
+  { id: 'short_bands', label: 'Mini bandas', icon: 'ellipse-outline' },
+  { id: 'ab_wheel', label: 'Rueda abdominal', icon: 'disc-outline' },
+  { id: 'jump_rope', label: 'Cuerda para saltar', icon: 'infinite-outline' },
+  { id: 'hand_grippers', label: 'Hand grippers', icon: 'hand-left-outline' },
+  { id: 'bodyweight', label: 'Peso corporal', icon: 'body-outline' },
 ];
 
 const LEVEL_OPTIONS: { value: 'beginner' | 'intermediate' | 'advanced'; label: string }[] = [
@@ -55,7 +59,7 @@ function SettingRow({
   onPress,
   danger,
 }: {
-  icon: string;
+  icon: IconName;
   label: string;
   value?: string;
   onPress: () => void;
@@ -63,7 +67,7 @@ function SettingRow({
 }) {
   return (
     <TouchableOpacity style={styles.settingRow} onPress={onPress} activeOpacity={0.7}>
-      <Text style={styles.settingIcon}>{icon}</Text>
+      <Ionicons name={icon} size={19} color={danger ? COLORS.danger : COLORS.textSecondary} style={styles.settingIcon} />
       <Text style={[styles.settingLabel, danger && { color: COLORS.danger }]}>{label}</Text>
       <View style={styles.settingRight}>
         {value ? <Text style={styles.settingValue}>{value}</Text> : null}
@@ -74,6 +78,7 @@ function SettingRow({
 }
 
 export default function SettingsScreen() {
+  const router = useRouter();
   const { profile, setMode, setEquipment, updateProfile } = useUserStore();
   const progressStore = useProgressStore();
   const routineStore = useRoutineStore();
@@ -83,6 +88,7 @@ export default function SettingsScreen() {
   const [nameInput, setNameInput] = useState(profile.name);
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [exportingDashboard, setExportingDashboard] = useState(false);
 
   function toggleEquipment(equip: Equipment) {
     const current = profile.home_equipment;
@@ -149,6 +155,27 @@ export default function SettingsScreen() {
     }
   }
 
+  async function handleExportDashboard() {
+    setExportingDashboard(true);
+    try {
+      await exportForDashboard({
+        profile: useUserStore.getState().profile,
+        routines: useRoutineStore.getState().routines,
+        sessions: progressStore.sessions,
+        personalRecords: progressStore.personalRecords,
+        achievements: progressStore.achievements,
+        bodyWeight: progressStore.bodyWeight,
+        streak: progressStore.streak,
+        bestStreak: progressStore.bestStreak,
+      });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Error al exportar';
+      Alert.alert('Error', msg);
+    } finally {
+      setExportingDashboard(false);
+    }
+  }
+
   async function handleImport() {
     Alert.alert(
       'Importar datos',
@@ -197,6 +224,30 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+
+        {/* Banner "Mis Objetivos" */}
+        <TouchableOpacity
+          style={styles.profileBanner}
+          onPress={() => router.push('/profile')}
+          activeOpacity={0.85}
+        >
+          <View style={styles.profileBannerLeft}>
+            <View style={styles.profileBannerIcon}>
+              <Ionicons name="locate" size={22} color={COLORS.primary} />
+            </View>
+            <View>
+              <Text style={styles.profileBannerTitle}>Mi perfil y objetivos</Text>
+              <Text style={styles.profileBannerSub}>
+                {profile.mode === 'home' ? 'Casa' : 'Gym'} · {
+                  profile.goals?.length
+                    ? profile.goals.length === 1 ? '1 objetivo' : `${profile.goals.length} objetivos`
+                    : 'Sin objetivos configurados'
+                }
+              </Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
+        </TouchableOpacity>
 
         {/* Perfil */}
         <Text style={styles.sectionTitle}>Perfil</Text>
@@ -305,7 +356,7 @@ export default function SettingsScreen() {
               onPress={() => toggleEquipment(item.id)}
               activeOpacity={0.7}
             >
-              <Text style={styles.equipIcon}>{item.icon}</Text>
+              <Ionicons name={item.icon} size={19} color={COLORS.textSecondary} style={styles.equipIcon} />
               <Text style={styles.equipLabel}>{item.label}</Text>
               <Switch
                 value={profile.home_equipment.includes(item.id)}
@@ -321,11 +372,78 @@ export default function SettingsScreen() {
           ))}
         </Card>
 
+        {/* Dashboard */}
+        <Text style={styles.sectionTitle}>Dashboard personal</Text>
+        <View style={styles.dashboardCard}>
+          <View style={styles.dashboardHeader}>
+            <View style={styles.dashboardIconChip}>
+              <Ionicons name="bar-chart" size={20} color={COLORS.primary} />
+            </View>
+            <View style={styles.dashboardHeaderText}>
+              <Text style={styles.dashboardTitle}>Exportar para Dashboard</Text>
+              <Text style={styles.dashboardSub}>JSON listo para conectar a tu dashboard personal</Text>
+            </View>
+          </View>
+
+          {/* Preview de qué incluye */}
+          <View style={styles.dashboardIncludes}>
+            {[
+              { icon: 'stats-chart-outline' as IconName, label: 'Resumen global (volumen, racha, PRs)' },
+              { icon: 'calendar-outline' as IconName, label: 'Últimas 12 semanas semana a semana' },
+              { icon: 'body-outline' as IconName, label: 'Desglose por grupo muscular' },
+              { icon: 'scale-outline' as IconName, label: 'Historial de peso corporal' },
+              { icon: 'trophy-outline' as IconName, label: 'Récords personales con 1RM estimado' },
+            ].map((item) => (
+              <View key={item.label} style={styles.includeRow}>
+                <Ionicons name={item.icon} size={14} color={COLORS.textMuted} />
+                <Text style={styles.includeText}>{item.label}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.dashboardStats}>
+            <View style={styles.dashboardStat}>
+              <Text style={styles.dashboardStatValue}>{sessions.length}</Text>
+              <Text style={styles.dashboardStatLabel}>sesiones</Text>
+            </View>
+            <View style={styles.dashboardStatDivider} />
+            <View style={styles.dashboardStat}>
+              <Text style={styles.dashboardStatValue}>{Object.keys(progressStore.personalRecords).length}</Text>
+              <Text style={styles.dashboardStatLabel}>PRs</Text>
+            </View>
+            <View style={styles.dashboardStatDivider} />
+            <View style={styles.dashboardStat}>
+              <Text style={styles.dashboardStatValue}>{progressStore.bodyWeight.length}</Text>
+              <Text style={styles.dashboardStatLabel}>pesos</Text>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={[styles.dashboardBtn, exportingDashboard && { opacity: 0.6 }]}
+            onPress={handleExportDashboard}
+            disabled={exportingDashboard}
+            activeOpacity={0.85}
+          >
+            {exportingDashboard ? (
+              <ActivityIndicator size="small" color={COLORS.accentText} />
+            ) : (
+              <Ionicons name="share-outline" size={18} color={COLORS.accentText} />
+            )}
+            <Text style={styles.dashboardBtnText}>
+              {exportingDashboard ? 'Generando…' : 'Exportar dashboard_export.json'}
+            </Text>
+          </TouchableOpacity>
+
+          <Text style={styles.dashboardNote}>
+            schema_version 1.0 · incluye sesiones completas para re-importar
+          </Text>
+        </View>
+
         {/* Datos */}
         <Text style={styles.sectionTitle}>Datos</Text>
         <Card padding={0}>
           <TouchableOpacity style={styles.settingRow} onPress={handleExport} activeOpacity={0.7} disabled={exporting}>
-            <Text style={styles.settingIcon}>📤</Text>
+            <Ionicons name="share-outline" size={19} color={COLORS.textSecondary} style={styles.settingIcon} />
             <Text style={styles.settingLabel}>Exportar mis datos</Text>
             {exporting ? <ActivityIndicator size="small" color={COLORS.primary} /> : (
               <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
@@ -333,14 +451,14 @@ export default function SettingsScreen() {
           </TouchableOpacity>
           <View style={styles.divider} />
           <TouchableOpacity style={styles.settingRow} onPress={handleImport} activeOpacity={0.7} disabled={importing}>
-            <Text style={styles.settingIcon}>📥</Text>
+            <Ionicons name="download-outline" size={19} color={COLORS.textSecondary} style={styles.settingIcon} />
             <Text style={styles.settingLabel}>Importar backup</Text>
             {importing ? <ActivityIndicator size="small" color={COLORS.primary} /> : (
               <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
             )}
           </TouchableOpacity>
           <View style={styles.divider} />
-          <SettingRow icon="🗑️" label="Resetear todos los datos" onPress={handleResetData} danger />
+          <SettingRow icon="trash-outline" label="Resetear todos los datos" onPress={handleResetData} danger />
         </Card>
 
         {/* Info */}
@@ -361,10 +479,10 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: SPACING.lg, gap: SPACING.sm, paddingTop: SPACING.sm },
 
   headerBar: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.md, paddingBottom: SPACING.sm },
-  pageTitle: { color: COLORS.textPrimary, fontSize: FONT.xxl, fontWeight: '800' },
+  pageTitle: { color: COLORS.textPrimary, fontSize: FONT.xxl, fontWeight: WEIGHT.semibold, letterSpacing: TRACKING.tight },
 
-  sectionTitle: { color: COLORS.textSecondary, fontSize: FONT.base, fontWeight: '600', marginTop: SPACING.sm },
-  sectionSub: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: -6 },
+  sectionTitle: { ...TEXT.overline, marginTop: SPACING.md, marginBottom: 2 },
+  sectionSub: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: -2 },
 
   profileRow: { flexDirection: 'row', alignItems: 'center', padding: SPACING.md, gap: SPACING.md },
   avatar: {
@@ -375,17 +493,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: COLORS.primary, fontSize: FONT.xl, fontWeight: '800' },
+  avatarText: { color: COLORS.primary, fontSize: FONT.xl, fontWeight: WEIGHT.semibold },
   profileInfo: { flex: 1 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  profileName: { color: COLORS.textPrimary, fontSize: FONT.md, fontWeight: '700' },
+  profileName: { color: COLORS.textPrimary, fontSize: FONT.md, fontWeight: WEIGHT.semibold },
   profileStats: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2 },
   nameEditRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   nameInput: {
     flex: 1,
     color: COLORS.textPrimary,
     fontSize: FONT.md,
-    fontWeight: '700',
+    fontWeight: WEIGHT.semibold,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.primary,
     paddingVertical: 2,
@@ -401,9 +519,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  optionBtnActive: { backgroundColor: COLORS.primaryDim },
-  optionText: { color: COLORS.textMuted, fontSize: FONT.sm, fontWeight: '600' },
-  optionTextActive: { color: COLORS.primary },
+  optionBtnActive: { backgroundColor: COLORS.primaryDim, borderWidth: 1, borderColor: COLORS.primary },
+  optionText: { color: COLORS.textMuted, fontSize: FONT.sm, fontWeight: WEIGHT.medium },
+  optionTextActive: { color: COLORS.primary, fontWeight: WEIGHT.semibold },
 
   equipRow: {
     flexDirection: 'row',
@@ -413,7 +531,7 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   equipBorder: { borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  equipIcon: { fontSize: 20, width: 28, textAlign: 'center' },
+  equipIcon: { width: 28, textAlign: 'center' },
   equipLabel: { flex: 1, color: COLORS.textPrimary, fontSize: FONT.base },
 
   settingRow: {
@@ -423,13 +541,74 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: SPACING.sm,
   },
-  settingIcon: { fontSize: 20, width: 28, textAlign: 'center' },
+  settingIcon: { width: 28, textAlign: 'center' },
   settingLabel: { flex: 1, color: COLORS.textPrimary, fontSize: FONT.base },
   settingRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   settingValue: { color: COLORS.textMuted, fontSize: FONT.base },
   divider: { height: 1, backgroundColor: COLORS.border, marginHorizontal: SPACING.md },
 
+  dashboardCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    padding: SPACING.md,
+    gap: SPACING.sm,
+  },
+  dashboardHeader: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  dashboardIconChip: {
+    width: 44, height: 44, borderRadius: RADIUS.md,
+    backgroundColor: COLORS.primaryDim, alignItems: 'center', justifyContent: 'center',
+  },
+  dashboardHeaderText: { flex: 1 },
+  dashboardTitle: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: WEIGHT.semibold },
+  dashboardSub: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2 },
+
+  dashboardIncludes: {
+    backgroundColor: COLORS.surface, borderRadius: RADIUS.md,
+    padding: SPACING.sm, gap: 8,
+  },
+  includeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  includeText: { color: COLORS.textSecondary, fontSize: FONT.sm, flex: 1 },
+
+  dashboardStats: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: COLORS.surface, borderRadius: RADIUS.md, paddingVertical: SPACING.sm,
+  },
+  dashboardStat: { flex: 1, alignItems: 'center' },
+  dashboardStatValue: {
+    color: COLORS.primary, fontSize: FONT.xl, fontWeight: WEIGHT.semibold,
+    fontVariant: ['tabular-nums'],
+  },
+  dashboardStatLabel: { color: COLORS.textMuted, fontSize: 11, marginTop: 2 },
+  dashboardStatDivider: { width: 1, height: 32, backgroundColor: COLORS.border },
+
+  dashboardBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, backgroundColor: COLORS.primary, borderRadius: RADIUS.md, paddingVertical: 14,
+  },
+  dashboardBtnText: { color: COLORS.accentText, fontSize: FONT.base, fontWeight: WEIGHT.semibold },
+  dashboardNote: {
+    color: COLORS.textMuted, fontSize: 11, textAlign: 'center',
+    fontVariant: ['tabular-nums'],
+  },
+
   appInfo: { alignItems: 'center', paddingTop: SPACING.md },
-  appName: { color: COLORS.textMuted, fontSize: FONT.base, fontWeight: '700' },
+  appName: { color: COLORS.textMuted, fontSize: FONT.base, fontWeight: WEIGHT.semibold },
   appVersion: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2 },
+
+  profileBanner: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: COLORS.surface, borderRadius: RADIUS.lg,
+    borderWidth: 1, borderColor: COLORS.border,
+    padding: SPACING.md, marginBottom: SPACING.xs,
+  },
+  profileBannerLeft: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  profileBannerIcon: {
+    width: 44, height: 44, borderRadius: RADIUS.md,
+    backgroundColor: COLORS.primaryDim,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  profileBannerTitle: { color: COLORS.textPrimary, fontSize: FONT.md, fontWeight: WEIGHT.semibold },
+  profileBannerSub: { color: COLORS.textSecondary, fontSize: FONT.sm, marginTop: 2 },
 });

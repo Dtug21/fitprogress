@@ -4,11 +4,19 @@ import { COLORS, RADIUS, SPACING } from '../../constants/theme';
 interface CardProps extends ViewProps {
   children: React.ReactNode;
   padding?: number;
+  elevated?: boolean;
 }
 
-export function Card({ children, style, padding = SPACING.md, ...props }: CardProps) {
+export function Card({ children, style, padding = SPACING.md, elevated, ...props }: CardProps) {
   return (
-    <View style={[styles.card, { padding }, style]} {...props}>
+    <View
+      style={[
+        styles.card,
+        { padding, backgroundColor: elevated ? COLORS.cardElevated : COLORS.card },
+        style,
+      ]}
+      {...props}
+    >
       {children}
     </View>
   );
@@ -16,7 +24,6 @@ export function Card({ children, style, padding = SPACING.md, ...props }: CardPr
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLORS.card,
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.border,

@@ -10,6 +10,7 @@ import {
   FlatList,
 } from 'react-native';
 import { useState, useMemo } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { useProgressStore } from '../../stores/useProgressStore';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -134,12 +135,12 @@ export default function ProgressScreen() {
               <Text style={styles.statLabel}>Sesiones totales</Text>
             </Card>
             <Card style={styles.statCard} padding={SPACING.md}>
-              <Text style={[styles.statValue, { color: '#F97316' }]}>{streak}</Text>
-              <Text style={styles.statLabel}>Racha actual 🔥</Text>
+              <Text style={[styles.statValue, { color: COLORS.primary }]}>{streak}</Text>
+              <Text style={styles.statLabel}>Racha actual</Text>
             </Card>
             <Card style={styles.statCard} padding={SPACING.md}>
               <Text style={[styles.statValue, { color: COLORS.warning }]}>{bestStreak}</Text>
-              <Text style={styles.statLabel}>Mejor racha 🏆</Text>
+              <Text style={styles.statLabel}>Mejor racha</Text>
             </Card>
             <Card style={styles.statCard} padding={SPACING.md}>
               <Text style={styles.statValue}>{thisMonthSessions}</Text>
@@ -153,7 +154,7 @@ export default function ProgressScreen() {
               <Text style={styles.sectionTitle}>Recuperación</Text>
               <Card padding={SPACING.md} style={styles.deloadCard}>
                 <View style={styles.deloadHeader}>
-                  <Text style={styles.deloadEmoji}>🔄</Text>
+                  <Ionicons name="refresh-circle" size={26} color={COLORS.warning} style={styles.deloadEmoji} />
                   <View style={styles.deloadInfo}>
                     <Text style={styles.deloadTitle}>Semana de deload recomendada</Text>
                     <Text style={styles.deloadMsg}>{deloadCheck.message}</Text>
@@ -236,7 +237,12 @@ export default function ProgressScreen() {
                 padding={SPACING.md}
                 style={[styles.achievementCard, !a.unlocked && styles.achievementLocked]}
               >
-                <Text style={styles.achievementIcon}>{a.unlocked ? '🏆' : '🔒'}</Text>
+                <Ionicons
+                  name={a.unlocked ? 'trophy' : 'lock-closed'}
+                  size={24}
+                  color={a.unlocked ? COLORS.primary : COLORS.textMuted}
+                  style={styles.achievementIcon}
+                />
                 <Text style={[styles.achievementTitle, !a.unlocked && { color: COLORS.textMuted }]}>
                   {a.title}
                 </Text>
@@ -247,7 +253,7 @@ export default function ProgressScreen() {
 
           {sessions.length === 0 && (
             <View style={styles.empty}>
-              <Text style={styles.emptyIcon}>📈</Text>
+              <Ionicons name="trending-up" size={32} color={COLORS.primary} style={styles.emptyIcon} />
               <Text style={styles.emptyTitle}>Sin entrenamientos aún</Text>
               <Text style={styles.emptySub}>
                 Completa tu primera sesión para ver tu progreso aquí.
@@ -277,7 +283,7 @@ export default function ProgressScreen() {
 
           {exercisesWithHistory.length === 0 && (
             <View style={styles.empty}>
-              <Text style={styles.emptyIcon}>💪</Text>
+              <Ionicons name="barbell" size={32} color={COLORS.primary} style={styles.emptyIcon} />
               <Text style={styles.emptyTitle}>Sin historial</Text>
               <Text style={styles.emptySub}>Completa entrenamientos para ver la progresión por ejercicio.</Text>
             </View>
@@ -424,7 +430,7 @@ const styles = StyleSheet.create({
 
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
   statCard: { width: '47.5%', alignItems: 'center' },
-  statValue: { color: COLORS.primary, fontSize: FONT.xxl, fontWeight: '800' },
+  statValue: { color: COLORS.primary, fontSize: FONT.xxl, fontWeight: '600', fontVariant: ['tabular-nums'], letterSpacing: -0.4 },
   statLabel: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2, textAlign: 'center' },
 
   prRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
@@ -441,12 +447,12 @@ const styles = StyleSheet.create({
   achievementsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
   achievementCard: { width: '47.5%', alignItems: 'center' },
   achievementLocked: { opacity: 0.45 },
-  achievementIcon: { fontSize: 28, marginBottom: 6 },
+  achievementIcon: { marginBottom: 6 },
   achievementTitle: { color: COLORS.textPrimary, fontSize: FONT.sm, fontWeight: '700', textAlign: 'center' },
   achievementDesc: { color: COLORS.textMuted, fontSize: 11, textAlign: 'center', marginTop: 2 },
 
   empty: { alignItems: 'center', paddingTop: 40, paddingBottom: 20 },
-  emptyIcon: { fontSize: 56, marginBottom: SPACING.md },
+  emptyIcon: { marginBottom: SPACING.md },
   emptyTitle: { color: COLORS.textPrimary, fontSize: FONT.lg, fontWeight: '700', marginBottom: 8 },
   emptySub: { color: COLORS.textMuted, fontSize: FONT.base, textAlign: 'center', paddingHorizontal: SPACING.xl },
 
@@ -483,7 +489,7 @@ const styles = StyleSheet.create({
 
   deloadCard: { borderWidth: 1, borderColor: COLORS.warning + '50', gap: SPACING.sm },
   deloadHeader: { flexDirection: 'row', gap: SPACING.sm, alignItems: 'flex-start' },
-  deloadEmoji: { fontSize: 28 },
+  deloadEmoji: {},
   deloadInfo: { flex: 1 },
   deloadTitle: { color: COLORS.warning, fontSize: FONT.base, fontWeight: '700' },
   deloadMsg: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2, lineHeight: 18 },

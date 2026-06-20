@@ -34,7 +34,9 @@ export function StartWorkout({ routines, onStart }: StartWorkoutProps) {
   if (routines.length === 0) {
     return (
       <View style={styles.empty}>
-        <Text style={styles.emptyIcon}>📋</Text>
+        <View style={styles.emptyIconChip}>
+          <Ionicons name="clipboard-outline" size={28} color={COLORS.textMuted} />
+        </View>
         <Text style={styles.emptyTitle}>Sin rutinas creadas</Text>
         <Text style={styles.emptySub}>
           Ve a la pestaña Rutinas y crea tu primera rutina para poder comenzar.
@@ -106,7 +108,7 @@ function RoutineCard({
             <Text style={styles.metaText}>~{estimatedMinutes} min</Text>
             <Text style={styles.metaDot}>·</Text>
             <Text style={styles.metaText}>
-              {routine.mode === 'home' ? '🏠 Casa' : '🏋️ Gym'}
+              {routine.mode === 'home' ? 'Casa' : 'Gym'}
             </Text>
           </View>
         </View>
@@ -133,8 +135,8 @@ function RoutineCard({
 
 const styles = StyleSheet.create({
   container: { padding: SPACING.lg, gap: SPACING.sm },
-  heading: { color: COLORS.textPrimary, fontSize: FONT.xl, fontWeight: '800', marginBottom: SPACING.sm },
-  sectionLabel: { color: COLORS.textSecondary, fontSize: FONT.base, fontWeight: '600', marginTop: SPACING.sm },
+  heading: { color: COLORS.textPrimary, fontSize: FONT.xl, fontWeight: '600', marginBottom: SPACING.sm },
+  sectionLabel: { color: COLORS.textMuted, fontSize: 11, fontWeight: '600', letterSpacing: 1.5, textTransform: 'uppercase', marginTop: SPACING.sm },
 
   routineCard: {},
   routineCardHighlight: {
@@ -143,7 +145,7 @@ const styles = StyleSheet.create({
   },
   routineHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.sm },
   routineInfo: { flex: 1 },
-  routineName: { color: COLORS.textPrimary, fontSize: FONT.lg, fontWeight: '700' },
+  routineName: { color: COLORS.textPrimary, fontSize: FONT.lg, fontWeight: '600' },
   routineMeta: { flexDirection: 'row', gap: 6, marginTop: 4 },
   metaText: { color: COLORS.textMuted, fontSize: FONT.sm },
   metaDot: { color: COLORS.textMuted, fontSize: FONT.sm },
@@ -151,7 +153,11 @@ const styles = StyleSheet.create({
   startBtn: {},
 
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: SPACING.xl },
-  emptyIcon: { fontSize: 56, marginBottom: SPACING.md },
-  emptyTitle: { color: COLORS.textPrimary, fontSize: FONT.lg, fontWeight: '700', marginBottom: 8 },
+  emptyIconChip: {
+    width: 72, height: 72, borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
+    alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.md,
+  },
+  emptyTitle: { color: COLORS.textPrimary, fontSize: FONT.lg, fontWeight: '600', marginBottom: 8 },
   emptySub: { color: COLORS.textMuted, fontSize: FONT.base, textAlign: 'center' },
 });

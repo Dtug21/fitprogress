@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS, RADIUS, FONT } from '../../constants/theme';
+import { COLORS, RADIUS, FONT, WEIGHT, TRACKING } from '../../constants/theme';
 
 type BadgeVariant = 'primary' | 'success' | 'warning' | 'danger' | 'neutral';
 
@@ -13,7 +13,7 @@ const BG: Record<BadgeVariant, string> = {
   success: COLORS.successDim,
   warning: COLORS.warningDim,
   danger: COLORS.dangerDim,
-  neutral: COLORS.border,
+  neutral: COLORS.cardElevated,
 };
 
 const COLOR: Record<BadgeVariant, string> = {
@@ -34,10 +34,10 @@ export function Badge({ label, variant = 'neutral' }: BadgeProps) {
 
 const styles = StyleSheet.create({
   badge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 9,
     paddingVertical: 4,
-    borderRadius: RADIUS.xl,
+    borderRadius: RADIUS.sm,
     alignSelf: 'flex-start',
   },
-  text: { fontSize: FONT.sm, fontWeight: '600' },
+  text: { fontSize: FONT.sm, fontWeight: WEIGHT.medium, letterSpacing: TRACKING.normal },
 });

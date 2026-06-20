@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { WorkoutSession, MuscleGroup } from '../../types';
 import { Card } from '../ui/Card';
 import { COLORS, FONT, SPACING, RADIUS } from '../../constants/theme';
@@ -11,10 +12,19 @@ const MUSCLE_LABELS: Record<string, string> = {
   calves: 'Gemelos', core: 'Core', cardio: 'Cardio',
 };
 
-const MUSCLE_ICONS: Record<string, string> = {
-  chest: '🫁', back: '🔙', shoulders: '💪', biceps: '💪',
-  triceps: '💪', legs: '🦵', quads: '🦵', hamstrings: '🦵',
-  glutes: '🍑', calves: '🦵', core: '🎯', cardio: '❤️',
+const MUSCLE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
+  chest: 'body-outline',
+  back: 'body-outline',
+  shoulders: 'barbell-outline',
+  biceps: 'barbell-outline',
+  triceps: 'barbell-outline',
+  legs: 'walk-outline',
+  quads: 'walk-outline',
+  hamstrings: 'walk-outline',
+  glutes: 'walk-outline',
+  calves: 'walk-outline',
+  core: 'disc-outline',
+  cardio: 'heart-outline',
 };
 
 interface MuscleGroupCardProps {
@@ -79,27 +89,35 @@ export function MuscleGroupCard({ muscle, sessions }: MuscleGroupCardProps) {
   const bestEx = getBestExercise(sessions, muscle);
   const trend = getTrend(sessions, muscle);
 
-  const trendIcon = trend === 'up' ? '↑' : trend === 'down' ? '↓' : trend === 'stable' ? '→' : '—';
+  const trendIcon: keyof typeof Ionicons.glyphMap =
+    trend === 'up' ? 'arrow-up-outline' :
+    trend === 'down' ? 'arrow-down-outline' :
+    trend === 'stable' ? 'arrow-forward-outline' : 'remove-outline';
   const trendColor = trend === 'up' ? COLORS.success : trend === 'down' ? COLORS.danger : COLORS.textMuted;
+
+  const muscleIcon = MUSCLE_ICONS[muscle] ?? 'barbell-outline';
 
   return (
     <Card padding={SPACING.md} style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.icon}>{MUSCLE_ICONS[muscle] ?? '💪'}</Text>
+        <View style={styles.iconChip}>
+          <Ionicons name={muscleIcon} size={18} color={COLORS.primary} />
+        </View>
         <View style={styles.info}>
           <Text style={styles.muscleName}>{MUSCLE_LABELS[muscle] ?? muscle}</Text>
           {weeklyVol > 0 ? (
-            <Text style={styles.volume}>{Math.round(weeklyVol).toLocaleString()} kg esta semana</Text>
+            <Text style={styles.volume}>{Math.round(weeklyVol).toLocaleString()} kg</Text>
           ) : (
-            <Text style={styles.noData}>Sin datos esta semana</Text>
+            <Text style={styles.noData}>Sin datos</Text>
           )}
         </View>
-        <Text style={[styles.trend, { color: trendColor }]}>{trendIcon}</Text>
+        <Ionicons name={trendIcon} size={18} color={trendColor} />
       </View>
       {bestEx && (
-        <Text style={styles.bestEx} numberOfLines={1}>
-          ⭐ {bestEx}
-        </Text>
+        <View style={styles.bestExRow}>
+          <Ionicons name="star" size={11} color={COLORS.primary} />
+          <Text style={styles.bestEx} numberOfLines={1}>{bestEx}</Text>
+        </View>
       )}
     </Card>
   );
@@ -108,11 +126,14 @@ export function MuscleGroupCard({ muscle, sessions }: MuscleGroupCardProps) {
 const styles = StyleSheet.create({
   card: { flex: 1, minWidth: '47%' },
   header: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
-  icon: { fontSize: 24 },
+  iconChip: {
+    width: 36, height: 36, borderRadius: RADIUS.md,
+    backgroundColor: COLORS.primaryDim, alignItems: 'center', justifyContent: 'center',
+  },
   info: { flex: 1 },
-  muscleName: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '700' },
-  volume: { color: COLORS.primary, fontSize: FONT.sm, marginTop: 2 },
+  muscleName: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '600' },
+  volume: { color: COLORS.primary, fontSize: FONT.sm, marginTop: 2, fontVariant: ['tabular-nums'] },
   noData: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2 },
-  trend: { fontSize: 20, fontWeight: '700' },
-  bestEx: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 6 },
+  bestExRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 },
+  bestEx: { color: COLORS.textMuted, fontSize: FONT.sm, flex: 1 },
 });

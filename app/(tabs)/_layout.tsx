@@ -1,10 +1,11 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS } from '../../constants/theme';
 
-const PRIMARY = '#00C4B4';
-const INACTIVE = '#6B7280';
-const BG = '#0D0D1A';
-const BORDER = '#1A1A2E';
+const PRIMARY = COLORS.primary;
+const INACTIVE = COLORS.textMuted;
+const BG = COLORS.bg;
+const BORDER = COLORS.border;
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -20,6 +21,7 @@ const TABS: TabConfig[] = [
   { name: 'workout', title: 'Entreno', icon: 'barbell-outline', iconActive: 'barbell' },
   { name: 'routines', title: 'Rutinas', icon: 'list-outline', iconActive: 'list' },
   { name: 'progress', title: 'Progreso', icon: 'trending-up-outline', iconActive: 'trending-up' },
+  { name: 'library', title: 'Biblioteca', icon: 'book-outline', iconActive: 'book' },
   { name: 'settings', title: 'Config', icon: 'settings-outline', iconActive: 'settings' },
 ];
 

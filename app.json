@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "fitprogress",
+    "name": "FitProgress",
     "slug": "fitprogress",
+    "owner": "dtug21",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -33,11 +34,23 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ],
-      "expo-sharing"
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "419f9fc3-63f8-468a-bb3b-32cc9253a7b0"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+
+    "updates": {
+      "url": "https://u.expo.dev/419f9fc3-63f8-468a-bb3b-32cc9253a7b0"
     }
   }
 }

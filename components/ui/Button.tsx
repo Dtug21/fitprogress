@@ -1,5 +1,6 @@
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle } from 'react-native';
-import { COLORS, RADIUS, FONT } from '../../constants/theme';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS, RADIUS, FONT, WEIGHT, TRACKING } from '../../constants/theme';
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
 
@@ -11,20 +12,28 @@ interface ButtonProps {
   loading?: boolean;
   style?: ViewStyle;
   fullWidth?: boolean;
+  icon?: keyof typeof Ionicons.glyphMap;
 }
 
 const BG: Record<Variant, string> = {
   primary: COLORS.primary,
-  secondary: COLORS.surface,
-  danger: COLORS.danger,
+  secondary: COLORS.cardElevated,
+  danger: COLORS.dangerDim,
   ghost: 'transparent',
 };
 
 const TEXT_COLOR: Record<Variant, string> = {
-  primary: '#000000',
+  primary: COLORS.accentText,
   secondary: COLORS.textPrimary,
-  danger: '#FFFFFF',
+  danger: COLORS.danger,
   ghost: COLORS.primary,
+};
+
+const BORDER: Record<Variant, string> = {
+  primary: 'transparent',
+  secondary: COLORS.border,
+  danger: 'transparent',
+  ghost: COLORS.border,
 };
 
 export function Button({
@@ -35,24 +44,29 @@ export function Button({
   loading,
   style,
   fullWidth,
+  icon,
 }: ButtonProps) {
+  const color = TEXT_COLOR[variant];
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled || loading}
-      activeOpacity={0.75}
+      activeOpacity={0.85}
       style={[
         styles.btn,
-        { backgroundColor: BG[variant] },
+        { backgroundColor: BG[variant], borderColor: BORDER[variant] },
         fullWidth && styles.fullWidth,
         (disabled || loading) && styles.disabled,
         style,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={TEXT_COLOR[variant]} size="small" />
+        <ActivityIndicator color={color} size="small" />
       ) : (
-        <Text style={[styles.label, { color: TEXT_COLOR[variant] }]}>{label}</Text>
+        <View style={styles.row}>
+          {icon && <Ionicons name={icon} size={18} color={color} />}
+          <Text style={[styles.label, { color }]}>{label}</Text>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -62,11 +76,13 @@ const styles = StyleSheet.create({
   btn: {
     height: 52,
     borderRadius: RADIUS.md,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   fullWidth: { width: '100%' },
-  disabled: { opacity: 0.5 },
-  label: { fontSize: FONT.md, fontWeight: '700' },
+  disabled: { opacity: 0.4 },
+  label: { fontSize: FONT.md, fontWeight: WEIGHT.semibold, letterSpacing: TRACKING.normal },
 });

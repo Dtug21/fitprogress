@@ -16,8 +16,6 @@ import { Badge } from '../../components/ui/Badge';
 import { COLORS, SPACING, FONT, RADIUS } from '../../constants/theme';
 import { getDayName } from '../../utils/formatters';
 import { exercises } from '../../data/exercises';
-import { generateId } from '../../utils/calculations';
-import { Routine } from '../../types';
 
 const MUSCLE_LABELS: Record<string, string> = {
   chest: 'Pecho', back: 'Espalda', shoulders: 'Hombros',
@@ -32,18 +30,7 @@ export default function RoutinesScreen() {
   const { profile } = useUserStore();
 
   function handleNewRoutine() {
-    const now = new Date().toISOString();
-    const newRoutine: Routine = {
-      id: generateId(),
-      name: 'Nueva rutina',
-      day_of_week: [],
-      mode: profile.mode,
-      exercises: [],
-      created_at: now,
-      updated_at: now,
-    };
-    addRoutine(newRoutine);
-    router.push(`/routine/${newRoutine.id}`);
+    router.push('/routine/new');
   }
 
   function handleDelete(id: string, name: string) {
@@ -73,7 +60,9 @@ export default function RoutinesScreen() {
       >
         {routines.length === 0 ? (
           <View style={styles.empty}>
-            <Text style={styles.emptyIcon}>📋</Text>
+            <View style={styles.emptyIconChip}>
+              <Ionicons name="clipboard-outline" size={28} color={COLORS.primary} />
+            </View>
             <Text style={styles.emptyTitle}>Sin rutinas todavía</Text>
             <Text style={styles.emptySub}>
               Toca el botón + para crear tu primera rutina de entrenamiento.
@@ -106,7 +95,7 @@ export default function RoutinesScreen() {
                         </Text>
                         <Text style={styles.metaDot}>·</Text>
                         <Text style={styles.metaText}>
-                          {routine.mode === 'home' ? '🏠 Casa' : '🏋️ Gym'}
+                          {routine.mode === 'home' ? 'Casa' : 'Gym'}
                         </Text>
                       </View>
                     </View>
@@ -115,12 +104,14 @@ export default function RoutinesScreen() {
                         label={routine.mode === 'home' ? 'Casa' : 'Gym'}
                         variant={routine.mode === 'home' ? 'primary' : 'success'}
                       />
-                      <Ionicons
-                        name="chevron-forward"
-                        size={18}
-                        color={COLORS.textMuted}
-                        style={{ marginTop: 6 }}
-                      />
+                      <TouchableOpacity
+                        onPress={() => handleDelete(routine.id, routine.name)}
+                        style={styles.deleteBtn}
+                        activeOpacity={0.7}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Ionicons name="trash-outline" size={16} color={COLORS.danger} />
+                      </TouchableOpacity>
                     </View>
                   </View>
 
@@ -193,7 +184,11 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: SPACING.lg, gap: SPACING.sm, paddingTop: SPACING.sm },
 
   empty: { alignItems: 'center', paddingTop: 80 },
-  emptyIcon: { fontSize: 56, marginBottom: SPACING.md },
+  emptyIconChip: {
+    width: 64, height: 64, borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
+    alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.md,
+  },
   emptyTitle: { color: COLORS.textPrimary, fontSize: FONT.lg, fontWeight: '700', marginBottom: 8 },
   emptySub: { color: COLORS.textMuted, fontSize: FONT.base, textAlign: 'center', paddingHorizontal: SPACING.xl },
 
@@ -235,5 +230,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 8,
+  },
+  deleteBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: COLORS.danger + '18',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
   },
 });

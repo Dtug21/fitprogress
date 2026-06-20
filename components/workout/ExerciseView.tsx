@@ -20,12 +20,12 @@ const MUSCLE_LABELS: Record<string, string> = {
   calves: 'Gemelos', core: 'Core', cardio: 'Cardio',
 };
 
-const RIR_OPTIONS: { value: RIR; emoji: string }[] = [
-  { value: 4, emoji: '😎' },
-  { value: 3, emoji: '😊' },
-  { value: 2, emoji: '💪' },
-  { value: 1, emoji: '😓' },
-  { value: 0, emoji: '😤' },
+const RIR_OPTIONS: { value: RIR; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { value: 4, icon: 'happy-outline' },
+  { value: 3, icon: 'happy-outline' },
+  { value: 2, icon: 'barbell-outline' },
+  { value: 1, icon: 'sad-outline' },
+  { value: 0, icon: 'flame-outline' },
 ];
 
 interface ExerciseViewProps {
@@ -135,9 +135,9 @@ export function ExerciseView({
   const isBodyweight = exercise.equipment_required.includes('bodyweight') && weight === 0;
   const weightStep = ['legs', 'glutes', 'hamstrings', 'quads'].includes(exercise.muscle_group) ? 5 : 2.5;
 
-  const progressionIcon =
-    suggestion.action === 'increase_weight' ? '↑' :
-    suggestion.action === 'deload' ? '↓' : '→';
+  const progressionIcon: keyof typeof Ionicons.glyphMap =
+    suggestion.action === 'increase_weight' ? 'arrow-up-outline' :
+    suggestion.action === 'deload' ? 'arrow-down-outline' : 'arrow-forward-outline';
   const progressionColor =
     suggestion.action === 'increase_weight' ? COLORS.success :
     suggestion.action === 'deload' ? COLORS.danger : COLORS.warning;
@@ -181,7 +181,7 @@ export function ExerciseView({
         {/* Badge de progresión */}
         {suggestion.message ? (
           <View style={[styles.suggestionBadge, { backgroundColor: `${progressionColor}20` }]}>
-            <Text style={[styles.suggestionIcon, { color: progressionColor }]}>{progressionIcon}</Text>
+            <Ionicons name={progressionIcon} size={16} color={progressionColor} />
             <Text style={[styles.suggestionText, { color: progressionColor }]}>{suggestion.message}</Text>
           </View>
         ) : null}
@@ -239,7 +239,7 @@ export function ExerciseView({
                 onPress={() => { setRir(opt.value); Haptics.selectionAsync(); }}
                 activeOpacity={0.7}
               >
-                <Text style={styles.rirEmoji}>{opt.emoji}</Text>
+                <Ionicons name={opt.icon} size={18} color={rir === opt.value ? COLORS.primary : COLORS.textMuted} />
                 <Text style={[styles.rirLabel, rir === opt.value && styles.rirLabelActive]}>
                   {RIR_LABELS[opt.value]}
                 </Text>
@@ -282,14 +282,13 @@ const styles = StyleSheet.create({
 
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   headerLeft: { flex: 1 },
-  muscleTag: { color: COLORS.primary, fontSize: FONT.sm, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
-  exerciseName: { color: COLORS.textPrimary, fontSize: FONT.xxl, fontWeight: '800', lineHeight: 32 },
+  muscleTag: { color: COLORS.primary, fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 4 },
+  exerciseName: { color: COLORS.textPrimary, fontSize: FONT.xxl, fontWeight: '600', lineHeight: 32 },
   headerRight: { alignItems: 'center', paddingLeft: SPACING.md },
-  setCounter: { color: COLORS.primary, fontSize: 40, fontWeight: '800', lineHeight: 44 },
+  setCounter: { color: COLORS.primary, fontSize: 40, fontWeight: '600', lineHeight: 44, fontVariant: ['tabular-nums'] },
   setLabel: { color: COLORS.textMuted, fontSize: FONT.sm },
 
   suggestionBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: SPACING.md, paddingVertical: 10, borderRadius: RADIUS.md },
-  suggestionIcon: { fontSize: 18, fontWeight: '800' },
   suggestionText: { fontSize: FONT.base, fontWeight: '600', flex: 1 },
 
   instructionsToggle: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -325,12 +324,11 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   rirBtnActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
-  rirEmoji: { fontSize: 18 },
   rirLabel: { color: COLORS.textMuted, fontSize: 10, fontWeight: '600', textAlign: 'center' },
   rirLabelActive: { color: COLORS.primary },
 
   completeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 60, borderRadius: RADIUS.lg, backgroundColor: COLORS.primary },
-  completeBtnText: { color: '#000', fontSize: FONT.lg, fontWeight: '800' },
+  completeBtnText: { color: COLORS.accentText, fontSize: FONT.lg, fontWeight: '600' },
 
   secondaryActions: { flexDirection: 'row', gap: SPACING.sm, marginTop: SPACING.sm },
   secondaryBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 44, borderRadius: RADIUS.md, backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border },

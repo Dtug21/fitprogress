@@ -56,6 +56,7 @@ export interface Exercise {
   video_cue?: string;
   progression_from?: string;
   progression_to?: string;
+  gifSource?: number;
 }
 
 export interface WorkoutSet {
@@ -103,13 +104,28 @@ export interface Routine {
   updated_at: string;
 }
 
+export type Goal =
+  | 'fat_loss'
+  | 'muscle_gain'
+  | 'strength'
+  | 'endurance'
+  | 'mixed'
+  | 'health';
+
 export interface UserProfile {
   name: string;
   mode: 'home' | 'gym';
   experience_level: 'beginner' | 'intermediate' | 'advanced';
-  goal: 'fat_loss' | 'strength' | 'mixed';
+  goals: Goal[];
   home_equipment: Equipment[];
   onboarding_completed: boolean;
+  age?: number;
+  weight_kg?: number;
+  height_cm?: number;
+  days_per_week?: number;
+  current_situation?: string;
+  // legacy
+  goal?: 'fat_loss' | 'strength' | 'mixed';
 }
 
 export interface PersonalRecord {

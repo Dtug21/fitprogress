@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { WorkoutSession, WorkoutSet } from '../../types';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -13,12 +14,13 @@ import { COLORS, SPACING, FONT, RADIUS } from '../../constants/theme';
 import { formatDuration, formatWeight } from '../../utils/formatters';
 import { getExerciseById } from '../../data/exercises';
 
-const MOODS = [
-  { emoji: '😞', label: 'Mal' },
-  { emoji: '😕', label: 'Regular' },
-  { emoji: '😐', label: 'Bien' },
-  { emoji: '🙂', label: 'Muy bien' },
-  { emoji: '🔥', label: '¡Épico!' },
+type MoodOption = { icon: keyof typeof Ionicons.glyphMap; color: string; label: string };
+const MOODS: MoodOption[] = [
+  { icon: 'sad-outline', color: COLORS.danger, label: 'Mal' },
+  { icon: 'sad-outline', color: COLORS.warning, label: 'Regular' },
+  { icon: 'happy-outline', color: COLORS.textSecondary, label: 'Bien' },
+  { icon: 'happy-outline', color: COLORS.success, label: 'Muy bien' },
+  { icon: 'flash', color: COLORS.primary, label: '¡Épico!' },
 ];
 
 interface WorkoutSummaryProps {
@@ -49,7 +51,12 @@ export function WorkoutSummary({ session, newPRs, mood, onMoodChange, onFinish }
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       {/* Título */}
-      <Text style={styles.title}>¡Entrenamiento completado! 🎉</Text>
+      <View style={styles.titleRow}>
+        <View style={styles.titleIconChip}>
+          <Ionicons name="checkmark-circle" size={32} color={COLORS.primary} />
+        </View>
+        <Text style={styles.title}>Entrenamiento completado</Text>
+      </View>
 
       {/* Stats principales */}
       <View style={styles.statsRow}>
@@ -72,7 +79,10 @@ export function WorkoutSummary({ session, newPRs, mood, onMoodChange, onFinish }
       {/* PRs nuevos */}
       {newPRs.length > 0 && (
         <Card padding={SPACING.md} style={styles.prCard}>
-          <Text style={styles.prTitle}>🏆 Nuevos récords personales</Text>
+          <View style={styles.prTitleRow}>
+            <Ionicons name="trophy" size={16} color={COLORS.primary} />
+            <Text style={styles.prTitle}>Nuevos récords personales</Text>
+          </View>
           {newPRs.map((exId) => {
             const ex = getExerciseById(exId);
             return (
@@ -115,7 +125,7 @@ export function WorkoutSummary({ session, newPRs, mood, onMoodChange, onFinish }
                 onPress={() => onMoodChange(val)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.moodEmoji}>{m.emoji}</Text>
+                <Ionicons name={m.icon} size={26} color={mood === val ? m.color : COLORS.textMuted} />
                 <Text style={[styles.moodLabel, mood === val && styles.moodLabelActive]}>
                   {m.label}
                 </Text>
@@ -140,20 +150,26 @@ export function WorkoutSummary({ session, newPRs, mood, onMoodChange, onFinish }
 const styles = StyleSheet.create({
   scroll: { flex: 1 },
   container: { padding: SPACING.lg, gap: SPACING.sm },
-  title: { color: COLORS.textPrimary, fontSize: FONT.xl, fontWeight: '800', textAlign: 'center', marginBottom: SPACING.sm },
+  titleRow: { alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.sm },
+  titleIconChip: {
+    width: 64, height: 64, borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.primaryDim, alignItems: 'center', justifyContent: 'center',
+  },
+  title: { color: COLORS.textPrimary, fontSize: FONT.xl, fontWeight: '600', textAlign: 'center' },
 
   statsRow: { flexDirection: 'row', gap: SPACING.sm },
   statCard: { flex: 1, alignItems: 'center' },
-  statValue: { color: COLORS.primary, fontSize: FONT.xl, fontWeight: '800' },
+  statValue: { color: COLORS.primary, fontSize: FONT.xl, fontWeight: '600', fontVariant: ['tabular-nums'] },
   statLabel: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2 },
 
-  prCard: { borderColor: COLORS.success, borderWidth: 1.5 },
-  prTitle: { color: COLORS.success, fontSize: FONT.md, fontWeight: '700', marginBottom: 8 },
+  prCard: { borderColor: COLORS.primary, borderWidth: 1 },
+  prTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
+  prTitle: { color: COLORS.primary, fontSize: FONT.sm, fontWeight: '600' },
   prItem: { color: COLORS.textPrimary, fontSize: FONT.base, marginTop: 4 },
 
-  sectionTitle: { color: COLORS.textSecondary, fontSize: FONT.base, fontWeight: '600', marginTop: SPACING.sm },
+  sectionTitle: { color: COLORS.textMuted, fontSize: 11, fontWeight: '600', letterSpacing: 1.5, textTransform: 'uppercase', marginTop: SPACING.sm },
 
-  exName: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '700', marginBottom: 8 },
+  exName: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '600', marginBottom: 8 },
   setsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   setChip: {
     paddingHorizontal: 10,
@@ -171,7 +187,6 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.sm,
   },
   moodBtnActive: { backgroundColor: COLORS.primaryDim },
-  moodEmoji: { fontSize: 26 },
   moodLabel: { color: COLORS.textMuted, fontSize: 10, marginTop: 4 },
   moodLabelActive: { color: COLORS.primary },
 
