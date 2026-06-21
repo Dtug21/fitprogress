@@ -1,0 +1,26 @@
+{
+  "name": "FitProgress",
+  "short_name": "FitProgress",
+  "description": "Tu app de entrenamiento con progresión inteligente",
+  "start_url": "/fitprogress/",
+  "scope": "/fitprogress/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0B0C",
+  "theme_color": "#0B0B0C",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/fitprogress/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/fitprogress/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

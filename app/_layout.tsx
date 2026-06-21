@@ -3,8 +3,10 @@ import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 import { useUserStore } from '../stores/useUserStore';
+import { PwaInstallHint } from '../components/ui/PwaInstallHint';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -67,13 +69,16 @@ export default function RootLayout() {
   if (!ready) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="onboarding/index" options={{ headerShown: false, animation: 'fade' }} />
-      <Stack.Screen name="routine/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
-      <Stack.Screen name="exercise/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
-      <Stack.Screen name="profile" options={{ headerShown: false, animation: 'slide_from_right' }} />
-      <Stack.Screen name="routine/new" options={{ headerShown: false, animation: 'slide_from_bottom' }} />
-    </Stack>
+    <SafeAreaProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding/index" options={{ headerShown: false, animation: 'fade' }} />
+        <Stack.Screen name="routine/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="exercise/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="profile" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="routine/new" options={{ headerShown: false, animation: 'slide_from_bottom' }} />
+      </Stack>
+      <PwaInstallHint />
+    </SafeAreaProvider>
   );
 }

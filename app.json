@@ -28,7 +28,9 @@
       "shortName": "FitProgress",
       "lang": "es",
       "backgroundColor": "#0B0B0C",
-      "themeColor": "#C6F24E",
+      "themeColor": "#0B0B0C",
+      "display": "standalone",
+      "orientation": "portrait",
       "description": "Tu app de entrenamiento con progresión inteligente",
       "preferRelatedApplications": false
     },
