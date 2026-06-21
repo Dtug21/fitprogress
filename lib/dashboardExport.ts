@@ -1,5 +1,4 @@
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
+import { Platform } from 'react-native';
 import { WorkoutSession, PersonalRecord, Achievement } from '../types';
 import { UserProfile } from '../types';
 import { Routine } from '../types';
@@ -265,8 +264,22 @@ export async function exportForDashboard(params: Parameters<typeof buildDashboar
   const json = JSON.stringify(data, null, 2);
   const date = new Date().toISOString().split('T')[0];
   const fileName = `fitprogress_dashboard_${date}.json`;
-  const filePath = `${FileSystem.documentDirectory}${fileName}`;
 
+  if (Platform.OS === 'web') {
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+    return;
+  }
+
+  const FileSystem = await import('expo-file-system');
+  const Sharing = await import('expo-sharing');
+
+  const filePath = `${FileSystem.documentDirectory}${fileName}`;
   await FileSystem.writeAsStringAsync(filePath, json, {
     encoding: FileSystem.EncodingType.UTF8,
   });
