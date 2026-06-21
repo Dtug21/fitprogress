@@ -14,6 +14,9 @@ interface WorkoutState {
   startSession: (session: WorkoutSession, exercises: RoutineExercise[]) => void;
   endSession: (mood?: 1 | 2 | 3 | 4 | 5) => WorkoutSession | null;
   addSet: (set: WorkoutSet) => void;
+  addExerciseToSession: (exercise: RoutineExercise) => void;
+  updateSet: (setId: string, updates: Partial<WorkoutSet>) => void;
+  removeSet: (setId: string) => void;
   nextExercise: () => void;
   nextSet: () => void;
   startRest: (seconds: number) => void;
@@ -68,6 +71,40 @@ export const useWorkoutStore = create<WorkoutState>()(
             activeSession: {
               ...state.activeSession,
               sets: [...state.activeSession.sets, workoutSet],
+            },
+          };
+        }),
+
+      // Agrega un ejercicio a la sesión en curso (entrenamiento libre o extra).
+      // No toca currentSetIndex: si estás a mitad de un ejercicio sigues ahí;
+      // el nuevo queda al final de la cola.
+      addExerciseToSession: (exercise) =>
+        set((state) => ({
+          sessionExercises: [...state.sessionExercises, exercise],
+        })),
+
+      // Corrige una serie ya registrada
+      updateSet: (setId, updates) =>
+        set((state) => {
+          if (!state.activeSession) return state;
+          return {
+            activeSession: {
+              ...state.activeSession,
+              sets: state.activeSession.sets.map((s) =>
+                s.id === setId ? { ...s, ...updates } : s
+              ),
+            },
+          };
+        }),
+
+      // Borra una serie registrada por error
+      removeSet: (setId) =>
+        set((state) => {
+          if (!state.activeSession) return state;
+          return {
+            activeSession: {
+              ...state.activeSession,
+              sets: state.activeSession.sets.filter((s) => s.id !== setId),
             },
           };
         }),

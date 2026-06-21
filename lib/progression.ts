@@ -10,7 +10,7 @@
  * - Epley (1985): 1RM = peso × (1 + reps/30), validada para rangos submáximos
  */
 
-import { WorkoutSession, MuscleGroup, RIR } from '../types';
+import { WorkoutSession, MuscleGroup, RIR, Exercise } from '../types';
 import { getExerciseById } from '../data/exercises';
 
 // ============================================================================
@@ -257,6 +257,39 @@ export function estimate1RM(weight_kg: number, reps: number): number {
 
 /** Alias para compatibilidad con el código anterior */
 export const estimateOneRepMax = estimate1RM;
+
+/**
+ * Puntaje comparable de récord para CUALQUIER ejercicio, incluido peso corporal.
+ *
+ * - Peso libre / máquina: 1RM estimado del peso levantado.
+ * - Peso corporal: usa (peso corporal + peso añadido) como carga, así una dominada
+ *   lastrada con +10 kg supera a una sin lastre, y más reps siempre puntúan más.
+ * - Si no conocemos el peso corporal y no hay lastre, caemos a "reps" como puntaje,
+ *   para que igual se registren récords de repeticiones (flexiones, plancha, etc.).
+ */
+export function exercisePRScore(
+  exercise: Exercise,
+  weightAddedKg: number,
+  reps: number,
+  bodyweightKg?: number,
+): number {
+  const isBodyweight = exercise.equipment_required.includes('bodyweight');
+  const load = isBodyweight ? (bodyweightKg ?? 0) + weightAddedKg : weightAddedKg;
+  if (load <= 0) return reps; // récord por repeticiones
+  return estimate1RM(load, reps);
+}
+
+/** Volumen efectivo de una serie, contando el peso corporal cuando aplica. */
+export function effectiveSetVolume(
+  exercise: Exercise,
+  weightAddedKg: number,
+  reps: number,
+  bodyweightKg?: number,
+): number {
+  const isBodyweight = exercise.equipment_required.includes('bodyweight');
+  const load = isBodyweight ? (bodyweightKg ?? 0) + weightAddedKg : weightAddedKg;
+  return load * reps;
+}
 
 export function suggestWeightFromRelated1RM(
   related1RM: number,

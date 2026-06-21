@@ -14,12 +14,28 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useUserStore } from '../../stores/useUserStore';
 import { useRoutineStore } from '../../stores/useRoutineStore';
+import { useProgressStore } from '../../stores/useProgressStore';
 import { COLORS, SPACING, FONT, RADIUS } from '../../constants/theme';
-import { Equipment } from '../../types';
+import { Equipment, Goal } from '../../types';
 import { buildHomeFullBody, buildGymUpperLower } from '../../lib/defaultRoutines';
 
-type Step = 'welcome' | 'name' | 'mode' | 'equipment' | 'done';
+type Step = 'welcome' | 'name' | 'mode' | 'equipment' | 'goals' | 'experience' | 'days' | 'metrics' | 'done';
 type IconName = keyof typeof Ionicons.glyphMap;
+type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
+
+const GOAL_OPTIONS: { id: Goal; label: string; desc: string; icon: IconName }[] = [
+  { id: 'fat_loss', label: 'Perder grasa', desc: 'Definición y déficit', icon: 'flame-outline' },
+  { id: 'muscle_gain', label: 'Ganar músculo', desc: 'Hipertrofia', icon: 'barbell-outline' },
+  { id: 'strength', label: 'Fuerza', desc: 'Levantar más peso', icon: 'fitness-outline' },
+  { id: 'health', label: 'Salud general', desc: 'Bienestar y hábito', icon: 'heart-outline' },
+  { id: 'endurance', label: 'Resistencia', desc: 'Aguante muscular', icon: 'pulse-outline' },
+];
+
+const EXPERIENCE_OPTIONS: { id: ExperienceLevel; label: string; desc: string }[] = [
+  { id: 'beginner', label: 'Principiante', desc: 'Menos de 6 meses entrenando' },
+  { id: 'intermediate', label: 'Intermedio', desc: '6 meses a 2 años de experiencia' },
+  { id: 'advanced', label: 'Avanzado', desc: 'Más de 2 años entrenando' },
+];
 
 const HOME_EQUIPMENT_LIST: { id: Equipment; label: string; icon: IconName }[] = [
   { id: 'dumbbells', label: 'Mancuernas regulables', icon: 'barbell-outline' },
@@ -37,8 +53,9 @@ const HOME_EQUIPMENT_LIST: { id: Equipment; label: string; icon: IconName }[] = 
 
 export default function OnboardingScreen() {
   const router = useRouter();
-  const { profile, setName, setMode, setEquipment, completeOnboarding } = useUserStore();
+  const { setName, setMode, setEquipment, setGoals, updateProfile, completeOnboarding } = useUserStore();
   const { addRoutine } = useRoutineStore();
+  const { addBodyWeight } = useProgressStore();
 
   const [step, setStep] = useState<Step>('welcome');
   const [name, setNameLocal] = useState('');
@@ -46,6 +63,12 @@ export default function OnboardingScreen() {
   const [equipment, setEquipmentLocal] = useState<Equipment[]>([
     'dumbbells', 'adjustable_bench', 'bodyweight', 'long_bands',
   ]);
+  const [goals, setGoalsLocal] = useState<Goal[]>(['muscle_gain']);
+  const [experience, setExperience] = useState<ExperienceLevel>('intermediate');
+  const [daysPerWeek, setDaysPerWeek] = useState(4);
+  const [weightKg, setWeightKg] = useState('');
+  const [heightCm, setHeightCm] = useState('');
+  const [age, setAge] = useState('');
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
@@ -63,11 +86,35 @@ export default function OnboardingScreen() {
     );
   }
 
+  function toggleGoal(goal: Goal) {
+    setGoalsLocal((prev) =>
+      prev.includes(goal) ? prev.filter((g) => g !== goal) : [...prev, goal]
+    );
+  }
+
   function handleFinish() {
-    // Guardar perfil
+    // Guardar perfil completo
     setName(name.trim() || 'Atleta');
     setMode(mode);
     setEquipment(equipment);
+    setGoals(goals.length > 0 ? goals : ['mixed']);
+
+    const parsedWeight = parseFloat(weightKg);
+    const parsedHeight = parseFloat(heightCm);
+    const parsedAge = parseInt(age, 10);
+
+    updateProfile({
+      experience_level: experience,
+      days_per_week: daysPerWeek,
+      ...(parsedWeight > 0 ? { weight_kg: parsedWeight } : {}),
+      ...(parsedHeight > 0 ? { height_cm: parsedHeight } : {}),
+      ...(parsedAge > 0 ? { age: parsedAge } : {}),
+    });
+
+    // Si dio peso corporal, lo registra como primer punto del historial
+    if (parsedWeight > 0) {
+      addBodyWeight({ date: new Date().toISOString().split('T')[0], weight_kg: parsedWeight });
+    }
 
     // Generar rutinas predeterminadas
     if (mode === 'home') {
@@ -82,9 +129,22 @@ export default function OnboardingScreen() {
     router.replace('/(tabs)');
   }
 
-  const steps: Step[] = ['welcome', 'name', 'mode', 'equipment', 'done'];
+  // Orden de pasos (equipment solo aplica en modo casa)
+  const steps: Step[] = mode === 'home'
+    ? ['welcome', 'name', 'mode', 'equipment', 'goals', 'experience', 'days', 'metrics', 'done']
+    : ['welcome', 'name', 'mode', 'goals', 'experience', 'days', 'metrics', 'done'];
   const currentIdx = steps.indexOf(step);
   const progress = (currentIdx / (steps.length - 1)) * 100;
+
+  // Navegación relativa: siguiente/anterior según el orden actual
+  function goNext() {
+    const next = steps[currentIdx + 1];
+    if (next) animateToStep(next);
+  }
+  function goPrev() {
+    const prev = steps[currentIdx - 1];
+    if (prev) animateToStep(prev);
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -110,7 +170,7 @@ export default function OnboardingScreen() {
             </Text>
             <TouchableOpacity
               style={styles.primaryBtn}
-              onPress={() => animateToStep('name')}
+              onPress={goNext}
               activeOpacity={0.8}
             >
               <Text style={styles.primaryBtnText}>Comenzar →</Text>
@@ -137,15 +197,15 @@ export default function OnboardingScreen() {
               autoFocus
               maxLength={30}
               returnKeyType="next"
-              onSubmitEditing={() => animateToStep('mode')}
+              onSubmitEditing={goNext}
             />
             <View style={styles.navRow}>
-              <TouchableOpacity style={styles.secondaryBtn} onPress={() => animateToStep('welcome')}>
+              <TouchableOpacity style={styles.secondaryBtn} onPress={goPrev}>
                 <Text style={styles.secondaryBtnText}>← Atrás</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.primaryBtn, styles.primaryBtnSmall]}
-                onPress={() => animateToStep('mode')}
+                onPress={goNext}
                 activeOpacity={0.8}
               >
                 <Text style={styles.primaryBtnText}>Siguiente →</Text>
@@ -185,12 +245,12 @@ export default function OnboardingScreen() {
             </View>
 
             <View style={styles.navRow}>
-              <TouchableOpacity style={styles.secondaryBtn} onPress={() => animateToStep('name')}>
+              <TouchableOpacity style={styles.secondaryBtn} onPress={goPrev}>
                 <Text style={styles.secondaryBtnText}>← Atrás</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.primaryBtn, styles.primaryBtnSmall]}
-                onPress={() => animateToStep(mode === 'home' ? 'equipment' : 'done')}
+                onPress={goNext}
                 activeOpacity={0.8}
               >
                 <Text style={styles.primaryBtnText}>Siguiente →</Text>
@@ -230,14 +290,216 @@ export default function OnboardingScreen() {
             </ScrollView>
 
             <View style={styles.navRow}>
-              <TouchableOpacity style={styles.secondaryBtn} onPress={() => animateToStep('mode')}>
+              <TouchableOpacity style={styles.secondaryBtn} onPress={goPrev}>
                 <Text style={styles.secondaryBtnText}>← Atrás</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.primaryBtn, styles.primaryBtnSmall]}
-                onPress={() => animateToStep('done')}
+                onPress={goNext}
                 activeOpacity={0.8}
               >
+                <Text style={styles.primaryBtnText}>Siguiente →</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* ===== OBJETIVOS ===== */}
+        {step === 'goals' && (
+          <View style={styles.stepContainerScroll}>
+            <View style={styles.stepIconChip}>
+              <Ionicons name="flag-outline" size={28} color={COLORS.primary} />
+            </View>
+            <Text style={styles.stepTitle}>¿Cuál es tu objetivo?</Text>
+            <Text style={styles.stepSub}>Elige uno o varios. Con esto la app calcula tus series, reps y descansos.</Text>
+
+            <ScrollView style={styles.optionsScroll} showsVerticalScrollIndicator={false}>
+              {GOAL_OPTIONS.map((g) => {
+                const selected = goals.includes(g.id);
+                return (
+                  <TouchableOpacity
+                    key={g.id}
+                    style={[styles.selectCard, selected && styles.selectCardActive]}
+                    onPress={() => toggleGoal(g.id)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name={g.icon} size={22} color={selected ? COLORS.primary : COLORS.textSecondary} />
+                    <View style={styles.selectInfo}>
+                      <Text style={[styles.selectLabel, selected && styles.selectLabelActive]}>{g.label}</Text>
+                      <Text style={styles.selectDesc}>{g.desc}</Text>
+                    </View>
+                    <Ionicons
+                      name={selected ? 'checkmark-circle' : 'ellipse-outline'}
+                      size={22}
+                      color={selected ? COLORS.primary : COLORS.textMuted}
+                    />
+                  </TouchableOpacity>
+                );
+              })}
+              <View style={{ height: 16 }} />
+            </ScrollView>
+
+            <View style={styles.navRow}>
+              <TouchableOpacity style={styles.secondaryBtn} onPress={goPrev}>
+                <Text style={styles.secondaryBtnText}>← Atrás</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.primaryBtn, styles.primaryBtnSmall, goals.length === 0 && styles.primaryBtnDisabled]}
+                onPress={goNext}
+                disabled={goals.length === 0}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.primaryBtnText}>Siguiente →</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* ===== EXPERIENCIA ===== */}
+        {step === 'experience' && (
+          <View style={styles.stepContainer}>
+            <View style={styles.stepIconChip}>
+              <Ionicons name="trending-up-outline" size={28} color={COLORS.primary} />
+            </View>
+            <Text style={styles.stepTitle}>¿Cuánta experiencia tienes?</Text>
+            <Text style={styles.stepSub}>Ajusta el volumen y la velocidad de progresión a tu nivel.</Text>
+
+            <View style={styles.expList}>
+              {EXPERIENCE_OPTIONS.map((e) => {
+                const selected = experience === e.id;
+                return (
+                  <TouchableOpacity
+                    key={e.id}
+                    style={[styles.selectCard, selected && styles.selectCardActive]}
+                    onPress={() => setExperience(e.id)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.selectInfo}>
+                      <Text style={[styles.selectLabel, selected && styles.selectLabelActive]}>{e.label}</Text>
+                      <Text style={styles.selectDesc}>{e.desc}</Text>
+                    </View>
+                    <Ionicons
+                      name={selected ? 'checkmark-circle' : 'ellipse-outline'}
+                      size={22}
+                      color={selected ? COLORS.primary : COLORS.textMuted}
+                    />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <View style={styles.navRow}>
+              <TouchableOpacity style={styles.secondaryBtn} onPress={goPrev}>
+                <Text style={styles.secondaryBtnText}>← Atrás</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.primaryBtn, styles.primaryBtnSmall]} onPress={goNext} activeOpacity={0.8}>
+                <Text style={styles.primaryBtnText}>Siguiente →</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* ===== DÍAS POR SEMANA ===== */}
+        {step === 'days' && (
+          <View style={styles.stepContainer}>
+            <View style={styles.stepIconChip}>
+              <Ionicons name="calendar-outline" size={28} color={COLORS.primary} />
+            </View>
+            <Text style={styles.stepTitle}>¿Cuántos días entrenas por semana?</Text>
+            <Text style={styles.stepSub}>Lo usamos como meta semanal y para sugerir el tipo de rutina.</Text>
+
+            <View style={styles.daysGrid}>
+              {[2, 3, 4, 5, 6].map((d) => {
+                const selected = daysPerWeek === d;
+                return (
+                  <TouchableOpacity
+                    key={d}
+                    style={[styles.dayBig, selected && styles.dayBigActive]}
+                    onPress={() => setDaysPerWeek(d)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.dayBigNum, selected && styles.dayBigNumActive]}>{d}</Text>
+                    <Text style={[styles.dayBigLabel, selected && styles.dayBigLabelActive]}>días</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <View style={styles.navRow}>
+              <TouchableOpacity style={styles.secondaryBtn} onPress={goPrev}>
+                <Text style={styles.secondaryBtnText}>← Atrás</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.primaryBtn, styles.primaryBtnSmall]} onPress={goNext} activeOpacity={0.8}>
+                <Text style={styles.primaryBtnText}>Siguiente →</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* ===== MÉTRICAS CORPORALES ===== */}
+        {step === 'metrics' && (
+          <View style={styles.stepContainer}>
+            <View style={styles.stepIconChip}>
+              <Ionicons name="body-outline" size={28} color={COLORS.primary} />
+            </View>
+            <Text style={styles.stepTitle}>Tus medidas (opcional)</Text>
+            <Text style={styles.stepSub}>
+              El peso nos deja registrar récords de calistenia y tu progreso corporal. Puedes saltarlo.
+            </Text>
+
+            <View style={styles.metricsList}>
+              <View style={styles.metricRow}>
+                <Text style={styles.metricLabel}>Peso corporal</Text>
+                <View style={styles.metricInputWrap}>
+                  <TextInput
+                    style={styles.metricInput}
+                    value={weightKg}
+                    onChangeText={setWeightKg}
+                    placeholder="70"
+                    placeholderTextColor={COLORS.textMuted}
+                    keyboardType="numeric"
+                    maxLength={5}
+                  />
+                  <Text style={styles.metricUnit}>kg</Text>
+                </View>
+              </View>
+              <View style={styles.metricRow}>
+                <Text style={styles.metricLabel}>Altura</Text>
+                <View style={styles.metricInputWrap}>
+                  <TextInput
+                    style={styles.metricInput}
+                    value={heightCm}
+                    onChangeText={setHeightCm}
+                    placeholder="175"
+                    placeholderTextColor={COLORS.textMuted}
+                    keyboardType="numeric"
+                    maxLength={3}
+                  />
+                  <Text style={styles.metricUnit}>cm</Text>
+                </View>
+              </View>
+              <View style={styles.metricRow}>
+                <Text style={styles.metricLabel}>Edad</Text>
+                <View style={styles.metricInputWrap}>
+                  <TextInput
+                    style={styles.metricInput}
+                    value={age}
+                    onChangeText={setAge}
+                    placeholder="28"
+                    placeholderTextColor={COLORS.textMuted}
+                    keyboardType="numeric"
+                    maxLength={2}
+                  />
+                  <Text style={styles.metricUnit}>años</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.navRow}>
+              <TouchableOpacity style={styles.secondaryBtn} onPress={goPrev}>
+                <Text style={styles.secondaryBtnText}>← Atrás</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.primaryBtn, styles.primaryBtnSmall]} onPress={goNext} activeOpacity={0.8}>
                 <Text style={styles.primaryBtnText}>Siguiente →</Text>
               </TouchableOpacity>
             </View>
@@ -258,9 +520,9 @@ export default function OnboardingScreen() {
             </Text>
             <View style={styles.summaryCard}>
               <SummaryRow icon={mode === 'home' ? 'home-outline' : 'barbell-outline'} label="Modo" value={mode === 'home' ? 'Casa' : 'Gimnasio'} />
-              {mode === 'home' && (
-                <SummaryRow icon="construct-outline" label="Equipamiento" value={`${equipment.length} elementos`} />
-              )}
+              <SummaryRow icon="flag-outline" label="Objetivos" value={`${goals.length}`} />
+              <SummaryRow icon="trending-up-outline" label="Nivel" value={EXPERIENCE_OPTIONS.find((e) => e.id === experience)?.label ?? ''} />
+              <SummaryRow icon="calendar-outline" label="Días/semana" value={`${daysPerWeek}`} />
               <SummaryRow icon="list-outline" label="Rutinas creadas" value={mode === 'home' ? '1' : '2'} />
             </View>
             <TouchableOpacity
@@ -360,6 +622,50 @@ const styles = StyleSheet.create({
   modeLabel: { color: COLORS.textSecondary, fontSize: FONT.base, fontWeight: '700' },
   modeLabelActive: { color: COLORS.primary },
   modeDesc: { color: COLORS.textMuted, fontSize: FONT.sm, textAlign: 'center', lineHeight: 18 },
+
+  primaryBtnDisabled: { opacity: 0.4 },
+
+  optionsScroll: { flex: 1, marginTop: SPACING.sm },
+  expList: { gap: SPACING.sm, marginTop: SPACING.md },
+  selectCard: {
+    flexDirection: 'row', alignItems: 'center', gap: SPACING.md,
+    backgroundColor: COLORS.surface, borderRadius: RADIUS.lg,
+    borderWidth: 1.5, borderColor: COLORS.border,
+    padding: SPACING.md, marginBottom: SPACING.sm,
+  },
+  selectCardActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
+  selectInfo: { flex: 1 },
+  selectLabel: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '600' },
+  selectLabelActive: { color: COLORS.primary },
+  selectDesc: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2 },
+
+  daysGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm, marginTop: SPACING.md, justifyContent: 'center' },
+  dayBig: {
+    width: 88, height: 88, borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.surface, borderWidth: 1.5, borderColor: COLORS.border,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  dayBigActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
+  dayBigNum: { color: COLORS.textSecondary, fontSize: 32, fontWeight: '600', fontVariant: ['tabular-nums'] },
+  dayBigNumActive: { color: COLORS.primary },
+  dayBigLabel: { color: COLORS.textMuted, fontSize: FONT.sm },
+  dayBigLabelActive: { color: COLORS.primary },
+
+  metricsList: { gap: SPACING.sm, marginTop: SPACING.md },
+  metricRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: COLORS.surface, borderRadius: RADIUS.lg,
+    borderWidth: 1, borderColor: COLORS.border,
+    paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm,
+  },
+  metricLabel: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '500' },
+  metricInputWrap: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  metricInput: {
+    minWidth: 64, textAlign: 'right',
+    color: COLORS.textPrimary, fontSize: FONT.lg, fontWeight: '600',
+    fontVariant: ['tabular-nums'], paddingVertical: 4,
+  },
+  metricUnit: { color: COLORS.textMuted, fontSize: FONT.base, width: 36 },
 
   equipList: { flex: 1, backgroundColor: COLORS.surface, borderRadius: RADIUS.lg },
   equipRow: {

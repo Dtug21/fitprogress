@@ -8,7 +8,7 @@ import {
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { Exercise, RoutineExercise, ProgressionSuggestion, RIR } from '../../types';
+import { Exercise, RoutineExercise, ProgressionSuggestion, RIR, WorkoutSet } from '../../types';
 import { RIR_LABELS } from '../../lib/progression';
 import { COLORS, SPACING, FONT, RADIUS } from '../../constants/theme';
 import { formatWeight } from '../../utils/formatters';
@@ -36,6 +36,8 @@ interface ExerciseViewProps {
   totalExercises: number;
   currentExerciseIndex: number;
   suggestion: ProgressionSuggestion;
+  loggedSets: WorkoutSet[];
+  onDeleteSet: (setId: string) => void;
   onCompleteSet: (weight: number, reps: number, rir: RIR) => void;
   onSwapExercise: () => void;
   onSkipExercise: () => void;
@@ -119,6 +121,8 @@ export function ExerciseView({
   totalExercises,
   currentExerciseIndex,
   suggestion,
+  loggedSets,
+  onDeleteSet,
   onCompleteSet,
   onSwapExercise,
   onSkipExercise,
@@ -248,6 +252,33 @@ export function ExerciseView({
           </View>
         </View>
 
+        {/* Series ya registradas en este ejercicio */}
+        {loggedSets.length > 0 && (
+          <View style={styles.loggedCard}>
+            <Text style={styles.loggedTitle}>Series registradas</Text>
+            {loggedSets.map((set, i) => (
+              <View key={set.id} style={styles.loggedRow}>
+                <View style={styles.loggedNum}>
+                  <Text style={styles.loggedNumText}>{i + 1}</Text>
+                </View>
+                <Text style={styles.loggedData}>
+                  {set.weight_kg > 0 ? `${formatWeight(set.weight_kg)} × ` : ''}{set.reps} reps
+                </Text>
+                {set.rir != null && (
+                  <Text style={styles.loggedRir}>RIR {set.rir}</Text>
+                )}
+                <TouchableOpacity
+                  onPress={() => onDeleteSet(set.id)}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={styles.loggedDelete}
+                >
+                  <Ionicons name="close" size={16} color={COLORS.textMuted} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        )}
+
         {/* Botón completar */}
         <TouchableOpacity style={styles.completeBtn} onPress={handleComplete} activeOpacity={0.85}>
           <Ionicons name="checkmark-circle" size={24} color="#000" />
@@ -326,6 +357,21 @@ const styles = StyleSheet.create({
   rirBtnActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
   rirLabel: { color: COLORS.textMuted, fontSize: 10, fontWeight: '600', textAlign: 'center' },
   rirLabelActive: { color: COLORS.primary },
+
+  loggedCard: {
+    backgroundColor: COLORS.surface, borderRadius: RADIUS.lg,
+    borderWidth: 1, borderColor: COLORS.border, padding: SPACING.md, gap: 8,
+  },
+  loggedTitle: { color: COLORS.textMuted, fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1.5 },
+  loggedRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  loggedNum: {
+    width: 22, height: 22, borderRadius: 11, backgroundColor: COLORS.successDim,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  loggedNumText: { color: COLORS.success, fontSize: 11, fontWeight: '700' },
+  loggedData: { flex: 1, color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '500', fontVariant: ['tabular-nums'] },
+  loggedRir: { color: COLORS.textMuted, fontSize: FONT.sm, fontVariant: ['tabular-nums'] },
+  loggedDelete: { padding: 2 },
 
   completeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 60, borderRadius: RADIUS.lg, backgroundColor: COLORS.primary },
   completeBtnText: { color: COLORS.accentText, fontSize: FONT.lg, fontWeight: '600' },

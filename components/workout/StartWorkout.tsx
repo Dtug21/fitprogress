@@ -24,44 +24,59 @@ const MUSCLE_LABELS: Record<string, string> = {
 interface StartWorkoutProps {
   routines: Routine[];
   onStart: (routine: Routine) => void;
+  onStartFreestyle: () => void;
 }
 
-export function StartWorkout({ routines, onStart }: StartWorkoutProps) {
+export function StartWorkout({ routines, onStart, onStartFreestyle }: StartWorkoutProps) {
   const todayIndex = getDayIndex();
   const todayRoutine = routines.find((r) => r.day_of_week.includes(todayIndex));
   const otherRoutines = routines.filter((r) => r.id !== todayRoutine?.id);
-
-  if (routines.length === 0) {
-    return (
-      <View style={styles.empty}>
-        <View style={styles.emptyIconChip}>
-          <Ionicons name="clipboard-outline" size={28} color={COLORS.textMuted} />
-        </View>
-        <Text style={styles.emptyTitle}>Sin rutinas creadas</Text>
-        <Text style={styles.emptySub}>
-          Ve a la pestaña Rutinas y crea tu primera rutina para poder comenzar.
-        </Text>
-      </View>
-    );
-  }
 
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <Text style={styles.heading}>¿Qué entrenamos hoy?</Text>
 
-      {todayRoutine && (
-        <>
-          <Text style={styles.sectionLabel}>Rutina de hoy</Text>
-          <RoutineCard routine={todayRoutine} onStart={onStart} highlight />
-        </>
-      )}
+      {/* Entrenamiento libre — siempre disponible */}
+      <TouchableOpacity style={styles.freestyleCard} onPress={onStartFreestyle} activeOpacity={0.85}>
+        <View style={styles.freestyleIcon}>
+          <Ionicons name="flash" size={22} color={COLORS.primary} />
+        </View>
+        <View style={styles.freestyleInfo}>
+          <Text style={styles.freestyleTitle}>Entrenamiento libre</Text>
+          <Text style={styles.freestyleSub}>
+            Sin rutina fija. Agrega ejercicios sobre la marcha.
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
+      </TouchableOpacity>
 
-      {otherRoutines.length > 0 && (
+      {routines.length === 0 ? (
+        <View style={styles.emptyInline}>
+          <View style={styles.emptyIconChip}>
+            <Ionicons name="clipboard-outline" size={28} color={COLORS.textMuted} />
+          </View>
+          <Text style={styles.emptyTitle}>Aún no tienes rutinas guardadas</Text>
+          <Text style={styles.emptySub}>
+            Crea una en la pestaña Rutinas, o entrena libre arriba.
+          </Text>
+        </View>
+      ) : (
         <>
-          <Text style={styles.sectionLabel}>Otras rutinas</Text>
-          {otherRoutines.map((r) => (
-            <RoutineCard key={r.id} routine={r} onStart={onStart} />
-          ))}
+          {todayRoutine && (
+            <>
+              <Text style={styles.sectionLabel}>Rutina de hoy</Text>
+              <RoutineCard routine={todayRoutine} onStart={onStart} highlight />
+            </>
+          )}
+
+          {otherRoutines.length > 0 && (
+            <>
+              <Text style={styles.sectionLabel}>Otras rutinas</Text>
+              {otherRoutines.map((r) => (
+                <RoutineCard key={r.id} routine={r} onStart={onStart} />
+              ))}
+            </>
+          )}
         </>
       )}
 
@@ -152,6 +167,21 @@ const styles = StyleSheet.create({
   muscleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: SPACING.md },
   startBtn: {},
 
+  freestyleCard: {
+    flexDirection: 'row', alignItems: 'center', gap: SPACING.sm,
+    backgroundColor: COLORS.primaryDim, borderRadius: RADIUS.lg,
+    borderWidth: 1, borderColor: COLORS.primary, padding: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  freestyleIcon: {
+    width: 44, height: 44, borderRadius: RADIUS.md,
+    backgroundColor: COLORS.bg, alignItems: 'center', justifyContent: 'center',
+  },
+  freestyleInfo: { flex: 1 },
+  freestyleTitle: { color: COLORS.textPrimary, fontSize: FONT.md, fontWeight: '600' },
+  freestyleSub: { color: COLORS.textSecondary, fontSize: FONT.sm, marginTop: 2 },
+
+  emptyInline: { alignItems: 'center', paddingVertical: SPACING.xl },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: SPACING.xl },
   emptyIconChip: {
     width: 72, height: 72, borderRadius: RADIUS.lg,

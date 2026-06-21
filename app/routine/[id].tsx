@@ -17,6 +17,7 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { ModeToggle } from '../../components/ui/ModeToggle';
+import { RoutineExerciseCard } from '../../components/routine/RoutineExerciseCard';
 import { COLORS, SPACING, FONT, RADIUS } from '../../constants/theme';
 import { exercises, getExerciseById } from '../../data/exercises';
 import { Exercise, RoutineExercise } from '../../types';
@@ -39,8 +40,10 @@ const MUSCLE_GROUPS = [
 export default function RoutineEditorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { getRoutineById, updateRoutine, removeExerciseFromRoutine, addExerciseToRoutine } =
-    useRoutineStore();
+  const {
+    getRoutineById, updateRoutine, removeExerciseFromRoutine, addExerciseToRoutine,
+    updateRoutineExercise, moveExercise,
+  } = useRoutineStore();
   const { profile } = useUserStore();
 
   const routine = getRoutineById(id);
@@ -96,6 +99,12 @@ export default function RoutineEditorScreen() {
       },
     ]);
   }
+
+  const totalSets = routine.exercises.reduce((t, re) => t + re.target_sets, 0);
+  const estimatedMin = routine.exercises.reduce(
+    (t, re) => t + Math.round((re.target_sets * (35 + re.rest_seconds)) / 60),
+    0,
+  );
 
   const filteredExercises = exercises.filter((e) => {
     const modeOk = e.mode === routine.mode || e.mode === 'both';
@@ -228,6 +237,12 @@ export default function RoutineEditorScreen() {
           </TouchableOpacity>
         </View>
 
+        {routine.exercises.length > 0 && (
+          <Text style={styles.summaryLine}>
+            {totalSets} series totales · ~{estimatedMin} min · toca un ejercicio para editarlo
+          </Text>
+        )}
+
         {routine.exercises.length === 0 ? (
           <Card padding={SPACING.lg}>
             <Text style={styles.noExTitle}>Sin ejercicios</Text>
@@ -238,30 +253,16 @@ export default function RoutineEditorScreen() {
             const ex = getExerciseById(re.exercise_id);
             if (!ex) return null;
             return (
-              <Card key={re.exercise_id} padding={SPACING.md} style={styles.exCard}>
-                <View style={styles.exRow}>
-                  <View style={styles.exIndex}>
-                    <Text style={styles.exIndexText}>{index + 1}</Text>
-                  </View>
-                  <View style={styles.exInfo}>
-                    <Text style={styles.exName}>{ex.name}</Text>
-                    <Text style={styles.exMeta}>
-                      {re.target_sets} series × {re.target_reps} reps · {re.rest_seconds}s descanso
-                    </Text>
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => handleRemoveExercise(re.exercise_id)}
-                    style={styles.removeBtn}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
-                    <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.exBadgeRow}>
-                  <Badge label={MUSCLE_LABELS[ex.muscle_group] ?? ex.muscle_group} variant="neutral" />
-                  <Badge label={`Dificultad ${ex.difficulty}`} variant="neutral" />
-                </View>
-              </Card>
+              <RoutineExerciseCard
+                key={re.exercise_id}
+                index={index}
+                total={routine.exercises.length}
+                routineExercise={re}
+                exercise={ex}
+                onUpdate={(updates) => updateRoutineExercise(id, re.exercise_id, updates)}
+                onRemove={() => handleRemoveExercise(re.exercise_id)}
+                onMove={(dir) => moveExercise(id, re.exercise_id, dir)}
+              />
             );
           })
         )}
@@ -313,6 +314,7 @@ const styles = StyleSheet.create({
   dayText: { color: COLORS.textMuted, fontSize: 11, fontWeight: '700' },
   dayTextActive: { color: COLORS.primary },
 
+  summaryLine: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2, marginBottom: 4 },
   exercisesHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   addExBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   addExText: { color: COLORS.primary, fontSize: FONT.base, fontWeight: '600' },

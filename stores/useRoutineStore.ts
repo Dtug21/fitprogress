@@ -10,6 +10,8 @@ interface RoutineState {
   deleteRoutine: (id: string) => void;
   addExerciseToRoutine: (routineId: string, exercise: RoutineExercise) => void;
   removeExerciseFromRoutine: (routineId: string, exerciseId: string) => void;
+  updateRoutineExercise: (routineId: string, exerciseId: string, updates: Partial<RoutineExercise>) => void;
+  moveExercise: (routineId: string, exerciseId: string, direction: 'up' | 'down') => void;
   reorderExercises: (routineId: string, exercises: RoutineExercise[]) => void;
   getRoutineById: (id: string) => Routine | undefined;
   getTodayRoutine: (dayOfWeek: number) => Routine | undefined;
@@ -52,6 +54,34 @@ export const useRoutineStore = create<RoutineState>()(
                 }
               : r
           ),
+        })),
+      updateRoutineExercise: (routineId, exerciseId, updates) =>
+        set((state) => ({
+          routines: state.routines.map((r) =>
+            r.id === routineId
+              ? {
+                  ...r,
+                  exercises: r.exercises.map((e) =>
+                    e.exercise_id === exerciseId ? { ...e, ...updates } : e
+                  ),
+                  updated_at: new Date().toISOString(),
+                }
+              : r
+          ),
+        })),
+      moveExercise: (routineId, exerciseId, direction) =>
+        set((state) => ({
+          routines: state.routines.map((r) => {
+            if (r.id !== routineId) return r;
+            const idx = r.exercises.findIndex((e) => e.exercise_id === exerciseId);
+            if (idx === -1) return r;
+            const target = direction === 'up' ? idx - 1 : idx + 1;
+            if (target < 0 || target >= r.exercises.length) return r;
+            const reordered = [...r.exercises];
+            [reordered[idx], reordered[target]] = [reordered[target], reordered[idx]];
+            const withOrder = reordered.map((e, i) => ({ ...e, order: i }));
+            return { ...r, exercises: withOrder, updated_at: new Date().toISOString() };
+          }),
         })),
       reorderExercises: (routineId, exercises) =>
         set((state) => ({

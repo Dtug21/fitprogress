@@ -53,7 +53,6 @@ export interface Exercise {
   instructions: string;
   tips: string[];
   alternatives: string[];
-  video_cue?: string;
   progression_from?: string;
   progression_to?: string;
   gifSource?: number;
@@ -66,7 +65,6 @@ export interface WorkoutSet {
   reps: number;
   weight_kg: number;
   rir?: RIR;
-  rpe?: number;
   completed: boolean;
   rest_seconds: number;
 }
@@ -124,8 +122,6 @@ export interface UserProfile {
   height_cm?: number;
   days_per_week?: number;
   current_situation?: string;
-  // legacy
-  goal?: 'fat_loss' | 'strength' | 'mixed';
 }
 
 export interface PersonalRecord {

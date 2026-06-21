@@ -20,7 +20,7 @@ import { useWorkoutStore } from '../../stores/useWorkoutStore';
 import { ModeToggle } from '../../components/ui/ModeToggle';
 import { Card } from '../../components/ui/Card';
 import { COLORS, SPACING, FONT, RADIUS, WEIGHT, TRACKING, TEXT } from '../../constants/theme';
-import { Equipment } from '../../types';
+import { Equipment, Goal } from '../../types';
 import { exportData, importData } from '../../lib/backup';
 import { exportForDashboard } from '../../lib/dashboardExport';
 
@@ -46,10 +46,12 @@ const LEVEL_OPTIONS: { value: 'beginner' | 'intermediate' | 'advanced'; label: s
   { value: 'advanced', label: 'Avanzado' },
 ];
 
-const GOAL_OPTIONS: { value: 'fat_loss' | 'strength' | 'mixed'; label: string }[] = [
-  { value: 'fat_loss', label: 'Pérdida de grasa' },
+const GOAL_OPTIONS: { value: Goal; label: string }[] = [
+  { value: 'fat_loss', label: 'Perder grasa' },
+  { value: 'muscle_gain', label: 'Ganar músculo' },
   { value: 'strength', label: 'Fuerza' },
-  { value: 'mixed', label: 'Mixto' },
+  { value: 'health', label: 'Salud' },
+  { value: 'endurance', label: 'Resistencia' },
 ];
 
 function SettingRow({
@@ -319,26 +321,30 @@ export default function SettingsScreen() {
           </View>
         </Card>
 
-        <Text style={styles.sectionTitle}>Objetivo</Text>
+        <Text style={styles.sectionTitle}>Objetivos</Text>
+        <Text style={styles.sectionSub}>Elige uno o varios. Definen tus series, reps y descansos.</Text>
         <Card padding={SPACING.sm}>
-          <View style={styles.optionsRow}>
-            {GOAL_OPTIONS.map((opt) => (
-              <TouchableOpacity
-                key={opt.value}
-                style={[
-                  styles.optionBtn,
-                  profile.goal === opt.value && styles.optionBtnActive,
-                ]}
-                onPress={() => updateProfile({ goal: opt.value })}
-              >
-                <Text style={[
-                  styles.optionText,
-                  profile.goal === opt.value && styles.optionTextActive,
-                ]}>
-                  {opt.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+          <View style={styles.goalsWrap}>
+            {GOAL_OPTIONS.map((opt) => {
+              const selected = (profile.goals ?? []).includes(opt.value);
+              return (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[styles.goalChip, selected && styles.optionBtnActive]}
+                  onPress={() => {
+                    const current = profile.goals ?? [];
+                    const next = selected
+                      ? current.filter((g) => g !== opt.value)
+                      : [...current, opt.value];
+                    updateProfile({ goals: next.length > 0 ? next : ['mixed'] });
+                  }}
+                >
+                  <Text style={[styles.optionText, selected && styles.optionTextActive]}>
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </Card>
 
@@ -511,6 +517,15 @@ const styles = StyleSheet.create({
   saveNameBtn: { padding: 4 },
 
   optionsRow: { flexDirection: 'row', gap: 6 },
+  goalsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  goalChip: {
+    paddingHorizontal: 14,
+    height: 40,
+    borderRadius: RADIUS.sm,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   optionBtn: {
     flex: 1,
     height: 40,
