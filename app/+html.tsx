@@ -56,6 +56,8 @@ body {
   overscroll-behavior: none;
   -webkit-text-size-adjust: 100%;
   touch-action: manipulation;
+  position: fixed;
+  inset: 0;
 }
 #root {
   display: flex;
@@ -63,8 +65,9 @@ body {
   width: 100%;
   height: 100%;
   height: 100dvh;
-  min-height: 100dvh;
+  min-height: 100%;
   background-color: #0B0B0C;
+  box-sizing: border-box;
 }
 * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 input, textarea, select { font-size: 16px; }

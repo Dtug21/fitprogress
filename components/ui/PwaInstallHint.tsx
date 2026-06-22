@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppInsets } from '../../lib/safeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONT, SPACING, RADIUS } from '../../constants/theme';
 
@@ -23,7 +23,7 @@ function isIosSafari(): boolean {
 
 export function PwaInstallHint() {
   const [visible, setVisible] = useState(false);
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;

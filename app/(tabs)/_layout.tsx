@@ -1,15 +1,15 @@
+import { View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../../constants/theme';
 import { useWorkoutStore } from '../../stores/useWorkoutStore';
+import { useAppInsets } from '../../lib/safeArea';
 
 const PRIMARY = COLORS.primary;
 const INACTIVE = COLORS.textMuted;
 const BG = COLORS.bg;
 const BORDER = COLORS.border;
-const TAB_BAR_CONTENT = 52;
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -30,9 +30,8 @@ const TABS: TabConfig[] = [
 ];
 
 export default function TabLayout() {
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const activeSession = useWorkoutStore((s) => s.activeSession);
-  const tabBarHeight = TAB_BAR_CONTENT + insets.bottom;
 
   const tabBarStyle = activeSession
     ? { display: 'none' as const }
@@ -40,9 +39,10 @@ export default function TabLayout() {
         backgroundColor: BG,
         borderTopColor: BORDER,
         borderTopWidth: 1,
-        height: tabBarHeight,
-        paddingTop: 6,
+        paddingTop: 4,
         paddingBottom: insets.bottom,
+        minHeight: 50 + insets.bottom,
+        elevation: 0,
       };
 
   return (
@@ -51,11 +51,20 @@ export default function TabLayout() {
         tabBarActiveTintColor: PRIMARY,
         tabBarInactiveTintColor: INACTIVE,
         tabBarStyle,
+        tabBarBackground: () => <View style={{ flex: 1, backgroundColor: BG }} />,
+        safeAreaInsets: { top: 0, right: 0, bottom: 0, left: 0 },
         tabBarHideOnKeyboard: true,
+        tabBarItemStyle: {
+          paddingTop: 2,
+          paddingBottom: Platform.OS === 'ios' ? 2 : 4,
+        },
+        tabBarIconStyle: {
+          marginBottom: -2,
+        },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '500',
-          marginBottom: Platform.OS === 'ios' ? 0 : 2,
+          marginTop: 0,
         },
         headerShown: false,
         sceneStyle: { backgroundColor: BG },
@@ -70,7 +79,7 @@ export default function TabLayout() {
             tabBarIcon: ({ focused, color }) => (
               <Ionicons
                 name={focused ? tab.iconActive : tab.icon}
-                size={24}
+                size={22}
                 color={color}
               />
             ),

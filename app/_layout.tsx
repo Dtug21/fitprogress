@@ -94,7 +94,7 @@ export default function RootLayout() {
             { maxWidth: isDesktopWeb ? 600 : '100%' },
           ]}
         >
-          <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+          <SafeAreaProvider initialMetrics={Platform.OS === 'web' ? undefined : initialWindowMetrics}>
             <StatusBar style="light" translucent backgroundColor="transparent" />
             <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.bg } }}>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -129,9 +129,9 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     backgroundColor: COLORS.bg,
-    overflow: 'hidden',
   },
   appDesktop: {
+    overflow: 'hidden',
     borderColor: COLORS.border,
     borderLeftWidth: 1,
     borderRightWidth: 1,

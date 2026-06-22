@@ -1,5 +1,5 @@
 import { View, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppInsets } from '../../lib/safeArea';
 import { COLORS } from '../../constants/theme';
 
 type ScreenVariant = 'tab' | 'stack' | 'full';
@@ -12,7 +12,7 @@ interface ScreenProps {
 }
 
 export function Screen({ children, style, variant = 'tab' }: ScreenProps) {
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
 
   const insetStyle: ViewStyle =
     variant === 'full'
