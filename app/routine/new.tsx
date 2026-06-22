@@ -1,7 +1,7 @@
 import {
-  View, Text, StyleSheet,ScrollView,
-  TouchableOpacity, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  View, Text, StyleSheet, SafeAreaView, ScrollView,
+  TouchableOpacity, Alert,
+} from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,14 +10,16 @@ import { useRoutineStore } from '../../stores/useRoutineStore';
 import { COLORS, SPACING, FONT, RADIUS } from '../../constants/theme';
 import {
   SPLIT_OPTIONS, SplitOption, SplitType,
-  getTrainingParams, generateRoutine } from '../../lib/routineOptimizer';
+  getTrainingParams, generateRoutine,
+} from '../../lib/routineOptimizer';
 import { generateId } from '../../utils/calculations';
 import { Goal } from '../../types';
 
 const GOAL_LABELS: Record<string, string> = {
   fat_loss: 'Perder grasa', muscle_gain: 'Ganar músculo',
   strength: 'Fuerza', endurance: 'Resistencia',
-  health: 'Salud', mixed: 'Balance' };
+  health: 'Salud', mixed: 'Balance',
+};
 
 export default function NewRoutineWizard() {
   const router = useRouter();
@@ -59,7 +61,8 @@ export default function NewRoutineWizard() {
       mode: profile.mode,
       exercises: generated.exercises,
       created_at: now,
-      updated_at: now };
+      updated_at: now,
+    };
     addRoutine(newRoutine);
     router.replace(`/routine/${newRoutine.id}`);
   }
@@ -73,7 +76,8 @@ export default function NewRoutineWizard() {
       mode: profile.mode,
       exercises: [],
       created_at: now,
-      updated_at: now };
+      updated_at: now,
+    };
     addRoutine(newRoutine);
     router.replace(`/routine/${newRoutine.id}`);
   }
@@ -81,7 +85,7 @@ export default function NewRoutineWizard() {
   // ── Paso: elegir split ────────────────────────────────────────────────────
   if (step === 'split') {
     return (
-      <style={styles.safe}>
+      <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
             <Ionicons name="close" size={22} color={COLORS.textPrimary} />
@@ -158,7 +162,7 @@ export default function NewRoutineWizard() {
 
           <View style={{ height: 40 }} />
         </ScrollView>
-      </>
+      </SafeAreaView>
     );
   }
 
@@ -168,7 +172,7 @@ export default function NewRoutineWizard() {
     : null;
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => setStep('split')} style={styles.backBtn} activeOpacity={0.7}>
           <Ionicons name="arrow-back" size={22} color={COLORS.textPrimary} />
@@ -234,7 +238,7 @@ export default function NewRoutineWizard() {
 
         <View style={{ height: 60 }} />
       </ScrollView>
-    </>
+    </SafeAreaView>
   );
 }
 
@@ -251,10 +255,12 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.bg },
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, gap: SPACING.sm },
+    paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, gap: SPACING.sm,
+  },
   backBtn: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: COLORS.surface, alignItems: 'center', justifyContent: 'center' },
+    backgroundColor: COLORS.surface, alignItems: 'center', justifyContent: 'center',
+  },
   headerTitle: { flex: 1, color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '700' },
   manualLink: { color: COLORS.textMuted, fontSize: FONT.sm, fontWeight: '600' },
 
@@ -262,13 +268,15 @@ const styles = StyleSheet.create({
 
   goalsCard: {
     backgroundColor: COLORS.card, borderRadius: RADIUS.lg,
-    borderWidth: 1, borderColor: COLORS.border, padding: SPACING.md, gap: SPACING.sm },
+    borderWidth: 1, borderColor: COLORS.border, padding: SPACING.md, gap: SPACING.sm,
+  },
   goalsTitle: { color: COLORS.textMuted, fontSize: FONT.sm, fontWeight: '600' },
   goalsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   goalChip: {
     backgroundColor: COLORS.primaryDim, borderRadius: 20,
     paddingHorizontal: 12, paddingVertical: 5,
-    borderWidth: 1, borderColor: COLORS.primary },
+    borderWidth: 1, borderColor: COLORS.primary,
+  },
   goalChipText: { color: COLORS.primary, fontSize: FONT.sm, fontWeight: '700' },
 
   paramsBox: { gap: 8 },
@@ -278,7 +286,8 @@ const styles = StyleSheet.create({
 
   paramBadge: {
     flex: 1, alignItems: 'center', backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.md, paddingVertical: 8 },
+    borderRadius: RADIUS.md, paddingVertical: 8,
+  },
   paramBadgeBig: { paddingVertical: 12, backgroundColor: COLORS.primaryDim },
   paramValue: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '800' },
   paramValueBig: { color: COLORS.primary, fontSize: FONT.lg },
@@ -291,12 +300,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: COLORS.card, borderRadius: RADIUS.lg,
     borderWidth: 1, borderColor: COLORS.border,
-    padding: SPACING.md, gap: SPACING.sm },
+    padding: SPACING.md, gap: SPACING.sm,
+  },
   splitCardRecommended: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
   splitLeft: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   splitIconBox: {
     width: 40, height: 40, borderRadius: RADIUS.md, marginTop: 2,
-    backgroundColor: COLORS.cardElevated, alignItems: 'center', justifyContent: 'center' },
+    backgroundColor: COLORS.cardElevated, alignItems: 'center', justifyContent: 'center',
+  },
   splitIconBoxRec: { backgroundColor: COLORS.primaryDim },
   splitInfo: { flex: 1, gap: 4 },
   splitTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
@@ -304,7 +315,8 @@ const styles = StyleSheet.create({
   starBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: COLORS.primaryDim, borderRadius: RADIUS.sm,
-    paddingHorizontal: 7, paddingVertical: 3 },
+    paddingHorizontal: 7, paddingVertical: 3,
+  },
   starBadgeText: { color: COLORS.primary, fontSize: 11, fontWeight: '500' },
   splitDesc: { color: COLORS.textMuted, fontSize: FONT.sm, lineHeight: 18 },
   splitDaysRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
@@ -312,24 +324,28 @@ const styles = StyleSheet.create({
 
   paramsCardBig: {
     backgroundColor: COLORS.card, borderRadius: RADIUS.lg,
-    borderWidth: 1, borderColor: COLORS.primary, padding: SPACING.md, gap: SPACING.sm },
+    borderWidth: 1, borderColor: COLORS.primary, padding: SPACING.md, gap: SPACING.sm,
+  },
   paramsCardTitle: { color: COLORS.primary, fontSize: FONT.base, fontWeight: '800' },
   paramsCardSub: { color: COLORS.textSecondary, fontSize: FONT.sm, fontWeight: '600' },
   rationaleText: { color: COLORS.textMuted, fontSize: FONT.sm, lineHeight: 19 },
 
   whyCard: {
     backgroundColor: COLORS.surface, borderRadius: RADIUS.lg,
-    padding: SPACING.md, gap: 8 },
+    padding: SPACING.md, gap: 8,
+  },
   whyTitle: { color: COLORS.textSecondary, fontSize: FONT.sm, fontWeight: '700' },
   whyText: { color: COLORS.textMuted, fontSize: FONT.sm, lineHeight: 19 },
 
   exRow: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 12,
     backgroundColor: COLORS.card, borderRadius: RADIUS.md,
-    borderWidth: 1, borderColor: COLORS.border, padding: SPACING.sm },
+    borderWidth: 1, borderColor: COLORS.border, padding: SPACING.sm,
+  },
   exNum: {
     width: 28, height: 28, borderRadius: 14,
-    backgroundColor: COLORS.primaryDim, alignItems: 'center', justifyContent: 'center' },
+    backgroundColor: COLORS.primaryDim, alignItems: 'center', justifyContent: 'center',
+  },
   exNumText: { color: COLORS.primary, fontSize: FONT.sm, fontWeight: '800' },
   exInfo: { flex: 1, gap: 3 },
   exName: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '700' },
@@ -339,7 +355,9 @@ const styles = StyleSheet.create({
   generateBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, backgroundColor: COLORS.primary, borderRadius: RADIUS.lg,
-    paddingVertical: 16 },
+    paddingVertical: 16,
+  },
   generateBtnText: { color: '#000', fontSize: FONT.base, fontWeight: '800' },
   backToSplitsBtn: { alignItems: 'center', paddingVertical: 12 },
-  backToSplitsText: { color: COLORS.textMuted, fontSize: FONT.sm, fontWeight: '600' } });
+  backToSplitsText: { color: COLORS.textMuted, fontSize: FONT.sm, fontWeight: '600' },
+});

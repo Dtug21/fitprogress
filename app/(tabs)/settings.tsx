@@ -1,13 +1,15 @@
 import {
   View,
   Text,
-  StyleSheet,ScrollView,
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
   TouchableOpacity,
   TextInput,
   Alert,
   Switch,
-  ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  ActivityIndicator,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
@@ -57,7 +59,8 @@ function SettingRow({
   label,
   value,
   onPress,
-  danger }: {
+  danger,
+}: {
   icon: IconName;
   label: string;
   value?: string;
@@ -116,14 +119,17 @@ export default function SettingsScreen() {
               sessions: [],
               personalRecords: {},
               achievements: useProgressStore.getState().achievements.map((a) => ({
-                ...a, unlocked: false, unlocked_at: undefined })),
+                ...a, unlocked: false, unlocked_at: undefined,
+              })),
               streak: 0,
               bestStreak: 0,
               lastWorkoutDate: null,
-              bodyWeight: [] });
+              bodyWeight: [],
+            });
             useRoutineStore.setState({ routines: [] });
             Alert.alert('Listo', 'Todos los datos han sido eliminados.');
-          } },
+          },
+        },
       ]
     );
   }
@@ -140,7 +146,8 @@ export default function SettingsScreen() {
           achievements: progressStore.achievements,
           bodyWeight: progressStore.bodyWeight,
           streak: progressStore.streak,
-          bestStreak: progressStore.bestStreak }
+          bestStreak: progressStore.bestStreak,
+        }
       );
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Error al exportar';
@@ -161,7 +168,8 @@ export default function SettingsScreen() {
         achievements: progressStore.achievements,
         bodyWeight: progressStore.bodyWeight,
         streak: progressStore.streak,
-        bestStreak: progressStore.bestStreak });
+        bestStreak: progressStore.bestStreak,
+      });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Error al exportar';
       Alert.alert('Error', msg);
@@ -195,7 +203,8 @@ export default function SettingsScreen() {
                   bodyWeight: (p.bodyWeight as never) ?? [],
                   streak: (p.streak as number) ?? 0,
                   bestStreak: (p.bestStreak as number) ?? 0,
-                  lastWorkoutDate: (p.lastWorkoutDate as string | null) ?? null });
+                  lastWorkoutDate: (p.lastWorkoutDate as string | null) ?? null,
+                });
               }
               Alert.alert('¡Importado!', 'Los datos se restauraron correctamente.');
             } catch (e: unknown) {
@@ -204,13 +213,14 @@ export default function SettingsScreen() {
             } finally {
               setImporting(false);
             }
-          } },
+          },
+        },
       ]
     );
   }
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       <View style={styles.headerBar}>
         <Text style={styles.pageTitle}>Configuración</Text>
       </View>
@@ -461,12 +471,11 @@ export default function SettingsScreen() {
         <View style={styles.appInfo}>
           <Text style={styles.appName}>FitProgress</Text>
           <Text style={styles.appVersion}>v1.0 — Fase 5</Text>
-          <Text style={styles.appDeveloper}>Desarrollado por DitoLabs</Text>
         </View>
 
         <View style={{ height: 40 }} />
       </ScrollView>
-    </>
+    </SafeAreaView>
   );
 }
 
@@ -488,7 +497,8 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     backgroundColor: COLORS.primaryDim,
     alignItems: 'center',
-    justifyContent: 'center' },
+    justifyContent: 'center',
+  },
   avatarText: { color: COLORS.primary, fontSize: FONT.xl, fontWeight: WEIGHT.semibold },
   profileInfo: { flex: 1 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -502,7 +512,8 @@ const styles = StyleSheet.create({
     fontWeight: WEIGHT.semibold,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.primary,
-    paddingVertical: 2 },
+    paddingVertical: 2,
+  },
   saveNameBtn: { padding: 4 },
 
   optionsRow: { flexDirection: 'row', gap: 6 },
@@ -513,14 +524,16 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.sm,
     backgroundColor: COLORS.surface,
     alignItems: 'center',
-    justifyContent: 'center' },
+    justifyContent: 'center',
+  },
   optionBtn: {
     flex: 1,
     height: 40,
     borderRadius: RADIUS.sm,
     backgroundColor: COLORS.surface,
     alignItems: 'center',
-    justifyContent: 'center' },
+    justifyContent: 'center',
+  },
   optionBtnActive: { backgroundColor: COLORS.primaryDim, borderWidth: 1, borderColor: COLORS.primary },
   optionText: { color: COLORS.textMuted, fontSize: FONT.sm, fontWeight: WEIGHT.medium },
   optionTextActive: { color: COLORS.primary, fontWeight: WEIGHT.semibold },
@@ -530,7 +543,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.md,
     paddingVertical: 14,
-    gap: SPACING.sm },
+    gap: SPACING.sm,
+  },
   equipBorder: { borderBottomWidth: 1, borderBottomColor: COLORS.border },
   equipIcon: { width: 28, textAlign: 'center' },
   equipLabel: { flex: 1, color: COLORS.textPrimary, fontSize: FONT.base },
@@ -540,7 +554,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.md,
     paddingVertical: 16,
-    gap: SPACING.sm },
+    gap: SPACING.sm,
+  },
   settingIcon: { width: 28, textAlign: 'center' },
   settingLabel: { flex: 1, color: COLORS.textPrimary, fontSize: FONT.base },
   settingRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -553,53 +568,62 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.primary,
     padding: SPACING.md,
-    gap: SPACING.sm },
+    gap: SPACING.sm,
+  },
   dashboardHeader: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
   dashboardIconChip: {
     width: 44, height: 44, borderRadius: RADIUS.md,
-    backgroundColor: COLORS.primaryDim, alignItems: 'center', justifyContent: 'center' },
+    backgroundColor: COLORS.primaryDim, alignItems: 'center', justifyContent: 'center',
+  },
   dashboardHeaderText: { flex: 1 },
   dashboardTitle: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: WEIGHT.semibold },
   dashboardSub: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2 },
 
   dashboardIncludes: {
     backgroundColor: COLORS.surface, borderRadius: RADIUS.md,
-    padding: SPACING.sm, gap: 8 },
+    padding: SPACING.sm, gap: 8,
+  },
   includeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   includeText: { color: COLORS.textSecondary, fontSize: FONT.sm, flex: 1 },
 
   dashboardStats: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: COLORS.surface, borderRadius: RADIUS.md, paddingVertical: SPACING.sm },
+    backgroundColor: COLORS.surface, borderRadius: RADIUS.md, paddingVertical: SPACING.sm,
+  },
   dashboardStat: { flex: 1, alignItems: 'center' },
   dashboardStatValue: {
     color: COLORS.primary, fontSize: FONT.xl, fontWeight: WEIGHT.semibold,
-    fontVariant: ['tabular-nums'] },
+    fontVariant: ['tabular-nums'],
+  },
   dashboardStatLabel: { color: COLORS.textMuted, fontSize: 11, marginTop: 2 },
   dashboardStatDivider: { width: 1, height: 32, backgroundColor: COLORS.border },
 
   dashboardBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, backgroundColor: COLORS.primary, borderRadius: RADIUS.md, paddingVertical: 14 },
+    gap: 8, backgroundColor: COLORS.primary, borderRadius: RADIUS.md, paddingVertical: 14,
+  },
   dashboardBtnText: { color: COLORS.accentText, fontSize: FONT.base, fontWeight: WEIGHT.semibold },
   dashboardNote: {
     color: COLORS.textMuted, fontSize: 11, textAlign: 'center',
-    fontVariant: ['tabular-nums'] },
+    fontVariant: ['tabular-nums'],
+  },
 
   appInfo: { alignItems: 'center', paddingTop: SPACING.md },
   appName: { color: COLORS.textMuted, fontSize: FONT.base, fontWeight: WEIGHT.semibold },
   appVersion: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2 },
-  appDeveloper: { color: COLORS.primary, fontSize: FONT.sm, fontWeight: WEIGHT.semibold, marginTop: 6 },
 
   profileBanner: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: COLORS.surface, borderRadius: RADIUS.lg,
     borderWidth: 1, borderColor: COLORS.border,
-    padding: SPACING.md, marginBottom: SPACING.xs },
+    padding: SPACING.md, marginBottom: SPACING.xs,
+  },
   profileBannerLeft: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
   profileBannerIcon: {
     width: 44, height: 44, borderRadius: RADIUS.md,
     backgroundColor: COLORS.primaryDim,
-    alignItems: 'center', justifyContent: 'center' },
+    alignItems: 'center', justifyContent: 'center',
+  },
   profileBannerTitle: { color: COLORS.textPrimary, fontSize: FONT.md, fontWeight: WEIGHT.semibold },
-  profileBannerSub: { color: COLORS.textSecondary, fontSize: FONT.sm, marginTop: 2 } });
+  profileBannerSub: { color: COLORS.textSecondary, fontSize: FONT.sm, marginTop: 2 },
+});

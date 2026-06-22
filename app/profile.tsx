@@ -1,7 +1,7 @@
 import {
-  View, Text, StyleSheet,ScrollView,
-  TouchableOpacity, TextInput, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  View, Text, StyleSheet, SafeAreaView, ScrollView,
+  TouchableOpacity, TextInput, Alert,
+} from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -111,14 +111,15 @@ export default function ProfileScreen() {
       weight_kg: weight ? parseFloat(weight) : undefined,
       height_cm: height ? parseFloat(height) : undefined,
       age: age ? parseInt(age) : undefined,
-      current_situation: situation.trim() || undefined });
+      current_situation: situation.trim() || undefined,
+    });
     setGoals(goals);
     Alert.alert('Guardado', 'Tu perfil fue actualizado. La app adaptará tus rutinas y ejercicios.');
     router.back();
   }
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
@@ -308,7 +309,7 @@ export default function ProfileScreen() {
 
         <View style={{ height: 60 }} />
       </ScrollView>
-    </>
+    </SafeAreaView>
   );
 }
 
@@ -320,21 +321,25 @@ const styles = StyleSheet.create({
 
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, gap: SPACING.sm },
+    paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, gap: SPACING.sm,
+  },
   backBtn: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: COLORS.surface, alignItems: 'center', justifyContent: 'center' },
+    backgroundColor: COLORS.surface, alignItems: 'center', justifyContent: 'center',
+  },
   headerTitle: { flex: 1, color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '600' },
   saveBtn: {
     paddingHorizontal: 16, paddingVertical: 8,
-    backgroundColor: COLORS.primary, borderRadius: RADIUS.md },
+    backgroundColor: COLORS.primary, borderRadius: RADIUS.md,
+  },
   saveBtnText: { color: COLORS.accentText, fontSize: FONT.sm, fontWeight: '600' },
 
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: SPACING.sm },
   sectionIconBox: {
     width: 36, height: 36, borderRadius: RADIUS.md,
     backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
-    alignItems: 'center', justifyContent: 'center' },
+    alignItems: 'center', justifyContent: 'center',
+  },
   sectionTitle: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '600' },
   sectionSubtitle: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 1 },
 
@@ -342,13 +347,15 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.card, borderRadius: RADIUS.lg,
     borderWidth: 1, borderColor: COLORS.border,
     paddingHorizontal: SPACING.md, height: 50,
-    color: COLORS.textPrimary, fontSize: FONT.base },
+    color: COLORS.textPrimary, fontSize: FONT.base,
+  },
 
   modeRow: { flexDirection: 'row', gap: SPACING.sm },
   modeCard: {
     flex: 1, backgroundColor: COLORS.card, borderRadius: RADIUS.lg,
     borderWidth: 1, borderColor: COLORS.border,
-    padding: SPACING.md, alignItems: 'center', gap: 4 },
+    padding: SPACING.md, alignItems: 'center', gap: 4,
+  },
   modeCardActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
   modeEmoji: { marginBottom: 2 },
   modeLabel: { color: COLORS.textSecondary, fontSize: FONT.base, fontWeight: '600' },
@@ -358,11 +365,13 @@ const styles = StyleSheet.create({
   goalCard: {
     flexDirection: 'row', alignItems: 'center', gap: SPACING.sm,
     backgroundColor: COLORS.card, borderRadius: RADIUS.lg,
-    borderWidth: 1, borderColor: COLORS.border, padding: SPACING.md },
+    borderWidth: 1, borderColor: COLORS.border, padding: SPACING.md,
+  },
   goalCardActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
   goalIconBox: {
     width: 40, height: 40, borderRadius: RADIUS.md,
-    backgroundColor: COLORS.cardElevated, alignItems: 'center', justifyContent: 'center' },
+    backgroundColor: COLORS.cardElevated, alignItems: 'center', justifyContent: 'center',
+  },
   goalIconBoxActive: { backgroundColor: COLORS.bg },
   goalText: { flex: 1 },
   goalLabel: { color: COLORS.textSecondary, fontSize: FONT.base, fontWeight: '600' },
@@ -372,14 +381,16 @@ const styles = StyleSheet.create({
   levelCard: {
     flexDirection: 'row', alignItems: 'center', gap: SPACING.sm,
     backgroundColor: COLORS.card, borderRadius: RADIUS.lg,
-    borderWidth: 1, borderColor: COLORS.border, padding: SPACING.md },
+    borderWidth: 1, borderColor: COLORS.border, padding: SPACING.md,
+  },
   levelCardActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
 
   daysRow: { flexDirection: 'row', gap: 8 },
   dayBtn: {
     flex: 1, alignItems: 'center', paddingVertical: SPACING.sm,
     backgroundColor: COLORS.card, borderRadius: RADIUS.md,
-    borderWidth: 1, borderColor: COLORS.border },
+    borderWidth: 1, borderColor: COLORS.border,
+  },
   dayBtnActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
   dayNum: { color: COLORS.textSecondary, fontSize: FONT.xl, fontWeight: '600', fontVariant: ['tabular-nums'] },
   dayNumActive: { color: COLORS.primary },
@@ -393,21 +404,24 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.card, borderRadius: RADIUS.md,
     borderWidth: 1, borderColor: COLORS.border,
     paddingHorizontal: SPACING.sm, height: 46,
-    color: COLORS.textPrimary, fontSize: FONT.base, textAlign: 'center' },
+    color: COLORS.textPrimary, fontSize: FONT.base, textAlign: 'center',
+  },
 
   textArea: {
     backgroundColor: COLORS.card, borderRadius: RADIUS.lg,
     borderWidth: 1, borderColor: COLORS.border,
     paddingHorizontal: SPACING.md, paddingVertical: SPACING.md,
     color: COLORS.textPrimary, fontSize: FONT.base,
-    minHeight: 100, textAlignVertical: 'top' },
+    minHeight: 100, textAlignVertical: 'top',
+  },
 
   equipGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   equipChip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 12, paddingVertical: 8,
     backgroundColor: COLORS.card, borderRadius: 20,
-    borderWidth: 1, borderColor: COLORS.border },
+    borderWidth: 1, borderColor: COLORS.border,
+  },
   equipChipActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
   equipLabel: { color: COLORS.textSecondary, fontSize: FONT.sm, fontWeight: '500' },
   equipLabelActive: { color: COLORS.primary },
@@ -415,5 +429,7 @@ const styles = StyleSheet.create({
   saveButtonBig: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, backgroundColor: COLORS.primary, borderRadius: RADIUS.lg,
-    paddingVertical: 16, marginTop: SPACING.sm },
-  saveButtonBigText: { color: COLORS.accentText, fontSize: FONT.base, fontWeight: '600' } });
+    paddingVertical: 16, marginTop: SPACING.sm,
+  },
+  saveButtonBigText: { color: COLORS.accentText, fontSize: FONT.base, fontWeight: '600' },
+});

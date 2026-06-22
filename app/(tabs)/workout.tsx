@@ -1,5 +1,4 @@
-import { View, StyleSheet,Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, StyleSheet, SafeAreaView, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useWorkoutStore } from '../../stores/useWorkoutStore';
@@ -37,7 +36,8 @@ export default function WorkoutScreen() {
     startRest,
     stopRest,
     replaceSessionExercise,
-    skipExercise } = useWorkoutStore();
+    skipExercise,
+  } = useWorkoutStore();
 
   const { routines } = useRoutineStore();
   const { sessions, saveSession, updatePersonalRecord, personalRecords, unlockAchievement, bodyWeight } = useProgressStore();
@@ -68,7 +68,8 @@ export default function WorkoutScreen() {
       date: new Date().toISOString().split('T')[0],
       mode: routine.mode,
       started_at: new Date().toISOString(),
-      sets: [] };
+      sets: [],
+    };
     startSession(session, routine.exercises);
   }
 
@@ -80,7 +81,8 @@ export default function WorkoutScreen() {
       date: new Date().toISOString().split('T')[0],
       mode: profile.mode,
       started_at: new Date().toISOString(),
-      sets: [] };
+      sets: [],
+    };
     startSession(session, []); // sin ejercicios: se agregan sobre la marcha
     setShowAddExercise(true);
   }
@@ -92,7 +94,8 @@ export default function WorkoutScreen() {
       order: sessionExercises.length,
       target_sets: 3,
       target_reps: exercise.exercise_type === 'cardio' ? 'AMRAP' : '8-12',
-      rest_seconds: exercise.exercise_type === 'compound' ? 120 : 90 };
+      rest_seconds: exercise.exercise_type === 'compound' ? 120 : 90,
+    };
     addExerciseToSession(re);
     setShowAddExercise(false);
   }
@@ -112,7 +115,8 @@ export default function WorkoutScreen() {
       weight_kg: weight,
       rir,
       completed: true,
-      rest_seconds: routineEx.rest_seconds };
+      rest_seconds: routineEx.rest_seconds,
+    };
     addSet(workoutSet);
 
     // Verificar PR — funciona para peso libre y peso corporal (incluye lastre)
@@ -163,7 +167,8 @@ export default function WorkoutScreen() {
           reps: 0,
           weight_kg: 0,
           completed: false,
-          rest_seconds: routineEx.rest_seconds });
+          rest_seconds: routineEx.rest_seconds,
+        });
       }
     }
     skipExercise();
@@ -206,7 +211,7 @@ export default function WorkoutScreen() {
   // ─── Render: Resumen ──────────────────────────────────────────────
   if (showSummary && finishedSession) {
     return (
-      <style={styles.safe}>
+      <SafeAreaView style={styles.safe}>
         <WorkoutSummary
           session={finishedSession}
           newPRs={newPRs}
@@ -214,14 +219,14 @@ export default function WorkoutScreen() {
           onMoodChange={setMood}
           onFinish={handleFinalFinish}
         />
-      </>
+      </SafeAreaView>
     );
   }
 
   // ─── Render: Sin sesión activa ────────────────────────────────────
   if (!activeSession) {
     return (
-      <style={styles.safe}>
+      <SafeAreaView style={styles.safe}>
         <View style={styles.headerBar}>
           <Text style={styles.pageTitle}>Entrenamiento</Text>
         </View>
@@ -230,7 +235,7 @@ export default function WorkoutScreen() {
           onStart={handleStartRoutine}
           onStartFreestyle={handleStartFreestyle}
         />
-      </>
+      </SafeAreaView>
     );
   }
 
@@ -250,9 +255,9 @@ export default function WorkoutScreen() {
   // Descanso activo
   if (isResting) {
     return (
-      <style={styles.safe}>
+      <SafeAreaView style={styles.safe}>
         <RestTimerOverlay onSkip={stopRest} />
-      </>
+      </SafeAreaView>
     );
   }
 
@@ -264,7 +269,7 @@ export default function WorkoutScreen() {
       .filter(Boolean) as string[];
 
     return (
-      <style={styles.safe}>
+      <SafeAreaView style={styles.safe}>
         <View style={styles.activeHeader}>
           <TouchableOpacity onPress={handleAbandon} style={styles.abandonBtn}>
             <Text style={styles.abandonText}>✕ Salir</Text>
@@ -323,12 +328,12 @@ export default function WorkoutScreen() {
           onSelect={handleAddExerciseToSession}
           onClose={() => setShowAddExercise(false)}
         />
-      </>
+      </SafeAreaView>
     );
   }
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       {/* Header con abandon + agregar */}
       <View style={styles.activeHeader}>
         <TouchableOpacity onPress={handleAbandon} style={styles.abandonBtn}>
@@ -381,7 +386,7 @@ export default function WorkoutScreen() {
         onSelect={handleAddExerciseToSession}
         onClose={() => setShowAddExercise(false)}
       />
-    </>
+    </SafeAreaView>
   );
 }
 
@@ -390,7 +395,8 @@ const styles = StyleSheet.create({
   headerBar: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.md,
-    paddingBottom: SPACING.sm },
+    paddingBottom: SPACING.sm,
+  },
   pageTitle: { color: COLORS.textPrimary, fontSize: FONT.xxl, fontWeight: '800' },
 
   activeHeader: {
@@ -398,41 +404,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm },
+    paddingVertical: SPACING.sm,
+  },
   abandonBtn: { padding: 4 },
   abandonText: { color: COLORS.danger, fontSize: FONT.base, fontWeight: '600' },
   activeTitle: { color: COLORS.textSecondary, fontSize: FONT.base, fontWeight: '600', flex: 1, textAlign: 'center' },
   addExerciseBtn: {
     width: 36, height: 36, borderRadius: 18,
-    backgroundColor: COLORS.primaryDim, alignItems: 'center', justifyContent: 'center' },
+    backgroundColor: COLORS.primaryDim, alignItems: 'center', justifyContent: 'center',
+  },
 
   // Hub de sesión
   hubScroll: { padding: SPACING.lg, alignItems: 'center', gap: SPACING.sm, paddingTop: SPACING.xl },
   hubIconChip: {
     width: 72, height: 72, borderRadius: RADIUS.lg,
     backgroundColor: COLORS.primaryDim, alignItems: 'center', justifyContent: 'center',
-    marginBottom: SPACING.sm },
+    marginBottom: SPACING.sm,
+  },
   hubTitle: { color: COLORS.textPrimary, fontSize: FONT.xl, fontWeight: '600' },
   hubSub: { color: COLORS.textMuted, fontSize: FONT.base, textAlign: 'center', lineHeight: 20 },
   hubList: {
     alignSelf: 'stretch', backgroundColor: COLORS.surface, borderRadius: RADIUS.lg,
-    borderWidth: 1, borderColor: COLORS.border, marginTop: SPACING.sm, overflow: 'hidden' },
+    borderWidth: 1, borderColor: COLORS.border, marginTop: SPACING.sm, overflow: 'hidden',
+  },
   hubRow: {
     flexDirection: 'row', alignItems: 'center', gap: SPACING.sm,
     paddingHorizontal: SPACING.md, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border },
+    borderBottomWidth: 1, borderBottomColor: COLORS.border,
+  },
   hubRowNum: {
     width: 24, height: 24, borderRadius: 12, backgroundColor: COLORS.primaryDim,
-    alignItems: 'center', justifyContent: 'center' },
+    alignItems: 'center', justifyContent: 'center',
+  },
   hubRowNumText: { color: COLORS.primary, fontSize: FONT.sm, fontWeight: '700' },
   hubRowName: { flex: 1, color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '500' },
   hubRowSets: { color: COLORS.textMuted, fontSize: FONT.sm, fontVariant: ['tabular-nums'] },
   hubAddBtn: {
     alignSelf: 'stretch', flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, height: 56, borderRadius: RADIUS.lg, backgroundColor: COLORS.primary, marginTop: SPACING.md },
+    gap: 8, height: 56, borderRadius: RADIUS.lg, backgroundColor: COLORS.primary, marginTop: SPACING.md,
+  },
   hubAddText: { color: COLORS.accentText, fontSize: FONT.md, fontWeight: '600' },
   hubFinishBtn: {
     alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center',
     height: 52, borderRadius: RADIUS.lg, backgroundColor: COLORS.surface,
-    borderWidth: 1, borderColor: COLORS.border, marginTop: SPACING.sm },
-  hubFinishText: { color: COLORS.textSecondary, fontSize: FONT.base, fontWeight: '600' } });
+    borderWidth: 1, borderColor: COLORS.border, marginTop: SPACING.sm,
+  },
+  hubFinishText: { color: COLORS.textSecondary, fontSize: FONT.base, fontWeight: '600' },
+});

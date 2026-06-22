@@ -1,12 +1,14 @@
 import {
   View,
   Text,
-  StyleSheet,ScrollView,
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
   TouchableOpacity,
   TextInput,
   Modal,
-  FlatList } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  FlatList,
+} from 'react-native';
 import { useState, useMemo } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useProgressStore } from '../../stores/useProgressStore';
@@ -24,7 +26,8 @@ import {
   checkIfDeloadNeeded,
   calculateWeeklyVolume,
   adaptSessionsToMuscleGroups,
-  HYPERTROPHY_WEEKLY_VOLUME_TARGET } from '../../lib/progression';
+  HYPERTROPHY_WEEKLY_VOLUME_TARGET,
+} from '../../lib/progression';
 
 type Tab = 'general' | 'ejercicio' | 'musculos';
 
@@ -35,7 +38,8 @@ const ALL_MUSCLES: MuscleGroup[] = [
 
 const MUSCLE_LABELS_ES: Record<string, string> = {
   chest: 'Pecho', back: 'Espalda', shoulders: 'Hombros',
-  biceps: 'Bíceps', triceps: 'Tríceps', legs: 'Piernas', core: 'Core' };
+  biceps: 'Bíceps', triceps: 'Tríceps', legs: 'Piernas', core: 'Core',
+};
 
 export default function ProgressScreen() {
   const { sessions, personalRecords, streak, bestStreak, achievements, lastDeloadDate, setLastDeloadDate } = useProgressStore();
@@ -99,7 +103,7 @@ export default function ProgressScreen() {
   const pr = selectedExerciseId ? personalRecords[selectedExerciseId] : null;
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       <View style={styles.headerBar}>
         <Text style={styles.pageTitle}>Mi Progreso</Text>
       </View>
@@ -396,7 +400,7 @@ export default function ProgressScreen() {
           </View>
         </View>
       </Modal>
-    </>
+    </SafeAreaView>
   );
 }
 
@@ -414,7 +418,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
-    padding: 4 },
+    padding: 4,
+  },
   tab: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: RADIUS.md },
   tabActive: { backgroundColor: COLORS.primary },
   tabLabel: { color: COLORS.textMuted, fontSize: FONT.sm, fontWeight: '600' },
@@ -460,7 +465,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
-    marginTop: SPACING.xs },
+    marginTop: SPACING.xs,
+  },
   exercisePickerText: { flex: 1, color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '600' },
   exercisePickerChevron: { color: COLORS.primary, fontSize: 24, fontWeight: '700' },
 
@@ -475,7 +481,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderWidth: 1,
-    borderColor: COLORS.border },
+    borderColor: COLORS.border,
+  },
   setChipText: { color: COLORS.textSecondary, fontSize: FONT.sm, fontWeight: '600' },
 
   muscleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
@@ -502,7 +509,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: SPACING.lg,
-    maxHeight: '80%' },
+    maxHeight: '80%',
+  },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.md },
   modalTitle: { color: COLORS.textPrimary, fontSize: FONT.lg, fontWeight: '700' },
   modalClose: { color: COLORS.textMuted, fontSize: FONT.xl, padding: 4 },
@@ -515,14 +523,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: 10,
     fontSize: FONT.base,
-    marginBottom: SPACING.md },
+    marginBottom: SPACING.md,
+  },
   emptyPicker: { height: 120, alignItems: 'center', justifyContent: 'center' },
   emptyPickerText: { color: COLORS.textMuted, fontSize: FONT.base },
   exerciseItem: {
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.sm,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border },
+    borderBottomColor: COLORS.border,
+  },
   exerciseItemActive: { backgroundColor: COLORS.primary + '20' },
   exerciseItemName: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '600' },
-  exerciseItemMeta: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2 } });
+  exerciseItemMeta: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2 },
+});

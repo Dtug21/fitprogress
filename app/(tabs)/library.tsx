@@ -1,11 +1,13 @@
 import {
   View,
   Text,
-  StyleSheet,TextInput,
+  StyleSheet,
+  SafeAreaView,
+  TextInput,
   TouchableOpacity,
   FlatList,
-  ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  ScrollView,
+} from 'react-native';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -43,7 +45,8 @@ const TYPE_LABELS: Record<string, string> = {
   compound: 'Compuesto',
   isolation: 'Aislamiento',
   cardio: 'Cardio',
-  mobility: 'Movilidad' };
+  mobility: 'Movilidad',
+};
 
 // ─── Componente tarjeta de ejercicio ─────────────────────────────────────────
 
@@ -111,7 +114,7 @@ export default function LibraryScreen() {
   const totalCount = exercises.length;
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       {/* Header */}
       <View style={styles.headerBar}>
         <View>
@@ -210,7 +213,7 @@ export default function LibraryScreen() {
           ) : null
         }
       />
-    </>
+    </SafeAreaView>
   );
 }
 
@@ -231,7 +234,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     paddingHorizontal: SPACING.md,
-    height: 46 },
+    height: 46,
+  },
   searchIcon: { marginRight: 8 },
   searchInput: { flex: 1, color: COLORS.textPrimary, fontSize: FONT.base },
   clearBtn: { padding: 4 },
@@ -240,7 +244,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: SPACING.lg,
     marginBottom: SPACING.sm,
-    gap: 8 },
+    gap: 8,
+  },
   modeChip: {
     flex: 1,
     flexDirection: 'row',
@@ -251,7 +256,8 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.md,
     backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: COLORS.border },
+    borderColor: COLORS.border,
+  },
   modeChipActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
   modeChipLabel: { color: COLORS.textMuted, fontSize: FONT.sm, fontWeight: '500' },
   modeChipLabelActive: { color: COLORS.primary },
@@ -259,11 +265,13 @@ const styles = StyleSheet.create({
   muscleScrollView: {
     flexGrow: 0,
     flexShrink: 0,
-    marginBottom: SPACING.sm },
+    marginBottom: SPACING.sm,
+  },
   muscleScrollContent: {
     paddingHorizontal: SPACING.lg,
     alignItems: 'center',
-    paddingVertical: 2 },
+    paddingVertical: 2,
+  },
   muscleChip: {
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -274,13 +282,15 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.borderStrong,
-    marginRight: 8 },
+    marginRight: 8,
+  },
   muscleChipActive: { backgroundColor: COLORS.primaryDim, borderColor: COLORS.primary },
   muscleChipLabel: {
     color: COLORS.textSecondary,
     fontSize: FONT.base,
     fontWeight: '600',
-    lineHeight: 18 },
+    lineHeight: 18,
+  },
   muscleChipLabelActive: { color: COLORS.primary },
 
   list: { flex: 1 },
@@ -294,7 +304,8 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.border,
-    overflow: 'hidden' },
+    overflow: 'hidden',
+  },
   cardAccent: { width: 4 },
   cardBody: { flex: 1, padding: SPACING.md, gap: 8 },
   cardTop: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
@@ -324,4 +335,5 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', paddingTop: 60 },
   emptyIcon: { marginBottom: SPACING.md },
   emptyText: { color: COLORS.textPrimary, fontSize: FONT.lg, fontWeight: '700' },
-  emptySub: { color: COLORS.textMuted, fontSize: FONT.base, marginTop: 6 } });
+  emptySub: { color: COLORS.textMuted, fontSize: FONT.base, marginTop: 6 },
+});
