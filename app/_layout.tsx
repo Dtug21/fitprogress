@@ -3,6 +3,7 @@ import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
+import { View, StyleSheet, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, DarkTheme } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
@@ -82,19 +83,43 @@ export default function RootLayout() {
         text: COLORS.textPrimary,
       }
     }}>
-      <SafeAreaProvider>
-        <StatusBar style="light" backgroundColor={COLORS.bg} />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.bg } }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="onboarding/index" options={{ headerShown: false, animation: 'fade' }} />
-          <Stack.Screen name="routine/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
-          <Stack.Screen name="exercise/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
-          <Stack.Screen name="profile" options={{ headerShown: false, animation: 'slide_from_right' }} />
-          <Stack.Screen name="routine/new" options={{ headerShown: false, animation: 'slide_from_bottom' }} />
-        </Stack>
-        <PwaInstallHint />
-      </SafeAreaProvider>
+      <View style={styles.webContainer}>
+        <View style={styles.appWrapper}>
+          <SafeAreaProvider>
+            <StatusBar style="light" backgroundColor={COLORS.bg} />
+            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.bg } }}>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="onboarding/index" options={{ headerShown: false, animation: 'fade' }} />
+              <Stack.Screen name="routine/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
+              <Stack.Screen name="exercise/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
+              <Stack.Screen name="profile" options={{ headerShown: false, animation: 'slide_from_right' }} />
+              <Stack.Screen name="routine/new" options={{ headerShown: false, animation: 'slide_from_bottom' }} />
+            </Stack>
+            <PwaInstallHint />
+          </SafeAreaProvider>
+        </View>
+      </View>
     </ThemeProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  webContainer: {
+    flex: 1,
+    backgroundColor: '#000000', // Dark outer background for desktop
+    alignItems: 'center',
+  },
+  appWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: Platform.OS === 'web' ? 600 : undefined,
+    backgroundColor: COLORS.bg,
+    overflow: 'hidden',
+    // Opcional: Para darle un look de móvil más realista en PC, agregamos sombra y borde sutil
+    boxShadow: Platform.OS === 'web' ? '0px 0px 20px rgba(0,0,0,0.5)' : undefined,
+    borderLeftWidth: Platform.OS === 'web' ? 1 : 0,
+    borderRightWidth: Platform.OS === 'web' ? 1 : 0,
+    borderColor: COLORS.border,
+  }
+});
 
