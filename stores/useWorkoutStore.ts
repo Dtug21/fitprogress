@@ -1,6 +1,4 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WorkoutSession, WorkoutSet, RoutineExercise } from '../types';
 
 interface WorkoutState {
@@ -30,9 +28,7 @@ interface WorkoutState {
   skipExercise: () => void;
 }
 
-export const useWorkoutStore = create<WorkoutState>()(
-  persist(
-    (set, get) => ({
+export const useWorkoutStore = create<WorkoutState>()((set, get) => ({
       activeSession: null,
       sessionExercises: [],
       currentExerciseIndex: 0,
@@ -188,10 +184,4 @@ export const useWorkoutStore = create<WorkoutState>()(
           restSecondsRemaining: 0,
           restEndsAt: null,
         })),
-    }),
-    {
-      name: 'fitprogress-workout',
-      storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
-);
+}));

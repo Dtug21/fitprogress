@@ -20,7 +20,9 @@ function defaultMetrics(): Metrics {
 export function AppSafeAreaProvider({ children }: { children: ReactNode }) {
   return (
     <SafeAreaProvider initialMetrics={defaultMetrics()}>
-      <View style={styles.fill}>{children}</View>
+      <View style={styles.fill} pointerEvents="box-none">
+        {children}
+      </View>
     </SafeAreaProvider>
   );
 }

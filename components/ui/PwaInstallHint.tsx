@@ -26,8 +26,13 @@ export function PwaInstallHint() {
   const ios = isIosSafari();
 
   return (
-    <View style={[styles.wrap, { bottom: 58 + insets.bottom }]} pointerEvents="box-none">
-      <View style={styles.card}>
+    <View
+      style={[styles.wrap, { bottom: 58 + insets.bottom }]}
+      pointerEvents="box-none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
+      <View style={styles.card} pointerEvents="auto">
         <View style={styles.header}>
           <Ionicons name="phone-portrait-outline" size={20} color={COLORS.primary} />
           <Text style={styles.title}>Instala la PWA</Text>
@@ -57,7 +62,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingHorizontal: SPACING.md,
-    zIndex: 9999,
+    zIndex: 50,
   },
   card: {
     backgroundColor: COLORS.cardElevated,

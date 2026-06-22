@@ -4,6 +4,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { View, StyleSheet, useWindowDimensions } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeProvider, DarkTheme } from '@react-navigation/native';
 import 'react-native-reanimated';
 import { useUserStore } from '../stores/useUserStore';
@@ -29,6 +30,10 @@ export default function RootLayout() {
   const [hydrated, setHydrated] = useState(false);
   const [forceReady, setForceReady] = useState(false);
   const onboardingCompleted = useUserStore((s) => s.profile.onboarding_completed);
+
+  useEffect(() => {
+    AsyncStorage.removeItem('fitprogress-workout').catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (error) throw error;
@@ -122,6 +127,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: COLORS.bg,
+    position: 'relative',
   },
   appDesktop: {
     overflow: 'hidden',

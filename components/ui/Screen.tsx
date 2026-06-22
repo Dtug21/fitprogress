@@ -16,10 +16,18 @@ export function Screen({ children, style, variant = 'tab' }: ScreenProps) {
   const insetStyle: ViewStyle =
     variant === 'full'
       ? {}
-      : {
-          paddingLeft: insets.left,
-          paddingRight: insets.right,
-        };
+      : variant === 'tab'
+        ? {
+            paddingTop: insets.top,
+            paddingLeft: insets.left,
+            paddingRight: insets.right,
+          }
+        : {
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+            paddingLeft: insets.left,
+            paddingRight: insets.right,
+          };
 
   return (
     <View style={[styles.root, insetStyle, style]}>

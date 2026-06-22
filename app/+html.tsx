@@ -36,40 +36,32 @@ export default function Root({ children }: { children: ReactNode }) {
 const globalStyles = `
 html {
   width: 100%;
-  height: 100dvh;
+  height: 100%;
+  min-height: 100dvh;
   background-color: #0B0B0C;
-  overflow: hidden;
 }
 body {
   background-color: #0B0B0C;
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100dvh;
+  height: 100%;
+  min-height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none;
   -webkit-text-size-adjust: 100%;
   touch-action: manipulation;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
 }
 #root {
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100dvh;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+  height: 100%;
+  min-height: 100dvh;
   background-color: #0B0B0C;
   box-sizing: border-box;
-  overflow: hidden;
 }
 * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 input, textarea, select { font-size: 16px; }
-@media (display-mode: standalone) {
-  body { user-select: none; -webkit-user-select: none; }
-}`;
+`;
 

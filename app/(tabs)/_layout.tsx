@@ -8,6 +8,12 @@ const INACTIVE = COLORS.textMuted;
 const BG = COLORS.bg;
 const BORDER = COLORS.border;
 
+const TAB_BAR_STYLE = {
+  backgroundColor: BG,
+  borderTopColor: BORDER,
+  borderTopWidth: 1,
+} as const;
+
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 interface TabConfig {
@@ -34,13 +40,7 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: PRIMARY,
         tabBarInactiveTintColor: INACTIVE,
-        tabBarStyle: activeSession
-          ? { display: 'none' }
-          : {
-              backgroundColor: BG,
-              borderTopColor: BORDER,
-              borderTopWidth: 1,
-            },
+        tabBarStyle: TAB_BAR_STYLE,
         tabBarHideOnKeyboard: true,
         tabBarLabelStyle: {
           fontSize: 10,
@@ -56,6 +56,10 @@ export default function TabLayout() {
           name={tab.name}
           options={{
             title: tab.title,
+            tabBarStyle:
+              tab.name === 'workout' && activeSession
+                ? { display: 'none' }
+                : TAB_BAR_STYLE,
             tabBarIcon: ({ focused, color }) => (
               <Ionicons
                 name={focused ? tab.iconActive : tab.icon}
