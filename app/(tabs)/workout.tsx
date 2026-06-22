@@ -43,7 +43,7 @@ export default function WorkoutScreen() {
     skipExercise } = useWorkoutStore();
 
   const { routines, addRoutine } = useRoutineStore();
-  const { sessions, saveSession, updatePersonalRecord, personalRecords, unlockAchievement, bodyWeight, lastDeloadDate } = useProgressStore();
+  const { sessions, saveSession, updatePersonalRecord, personalRecords, bodyWeight, lastDeloadDate } = useProgressStore();
   const { profile } = useUserStore();
 
   // Peso corporal más reciente (para PRs y volumen de calistenia)
@@ -134,7 +134,6 @@ export default function WorkoutScreen() {
         updatePersonalRecord(routineEx.exercise_id, pr);
         if (!newPRs.includes(routineEx.exercise_id)) {
           setNewPRs((prev) => [...prev, routineEx.exercise_id]);
-          unlockAchievement('first_pr');
         }
       }
     }
@@ -190,10 +189,6 @@ export default function WorkoutScreen() {
     setFinishedExercises(exercisesSnapshot);
     setFinishedSession(withTime);
     saveSession(withTime);
-    unlockAchievement('first_workout');
-
-    const total = sessions.length + 1;
-    if (total >= 10) unlockAchievement('workouts_10');
 
     setShowSummary(true);
   }

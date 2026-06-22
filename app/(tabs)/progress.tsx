@@ -24,7 +24,9 @@ import {
   checkIfDeloadNeeded,
   calculateWeeklyVolume,
   adaptSessionsToMuscleGroups,
-  HYPERTROPHY_WEEKLY_VOLUME_TARGET } from '../../lib/progression';
+  HYPERTROPHY_WEEKLY_VOLUME_TARGET,
+} from '../../lib/progression';
+import { getAchievementIcon } from '../../lib/achievements';
 
 type Tab = 'general' | 'ejercicio' | 'musculos';
 
@@ -58,6 +60,10 @@ export default function ProgressScreen() {
   }, [sessions]);
 
   const prEntries = Object.entries(personalRecords);
+  const sortedAchievements = useMemo(
+    () => [...achievements].sort((a, b) => Number(b.unlocked) - Number(a.unlocked)),
+    [achievements],
+  );
   const unlockedAchievements = achievements.filter((a) => a.unlocked);
 
   const deloadCheck = useMemo(() => checkIfDeloadNeeded(lastDeloadDate), [lastDeloadDate]);
@@ -227,14 +233,16 @@ export default function ProgressScreen() {
             Logros ({unlockedAchievements.length}/{achievements.length})
           </Text>
           <View style={styles.achievementsGrid}>
-            {achievements.map((a) => (
+            {sortedAchievements.map((a) => {
+              const iconName = getAchievementIcon(a.id, a.unlocked);
+              return (
               <Card
                 key={a.id}
                 padding={SPACING.md}
                 style={[styles.achievementCard, !a.unlocked && styles.achievementLocked]}
               >
                 <Ionicons
-                  name={a.unlocked ? 'trophy' : 'lock-closed'}
+                  name={a.unlocked ? iconName : 'lock-closed'}
                   size={24}
                   color={a.unlocked ? COLORS.primary : COLORS.textMuted}
                   style={styles.achievementIcon}
@@ -244,7 +252,8 @@ export default function ProgressScreen() {
                 </Text>
                 <Text style={styles.achievementDesc}>{a.description}</Text>
               </Card>
-            ))}
+            );
+            })}
           </View>
 
           {sessions.length === 0 && (
