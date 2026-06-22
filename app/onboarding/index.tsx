@@ -144,7 +144,7 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       {/* Barra de progreso */}
       {step !== 'welcome' && step !== 'done' && (
         <View style={styles.progressBar}>
@@ -532,7 +532,7 @@ export default function OnboardingScreen() {
           </View>
         )}
       </Animated.View>
-    </>
+    </SafeAreaView>
   );
 }
 

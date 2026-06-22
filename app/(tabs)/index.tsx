@@ -56,7 +56,7 @@ export default function HomeScreen() {
     .replace('.', '');
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -195,7 +195,7 @@ export default function HomeScreen() {
           </>
         )}
       </ScrollView>
-    </>
+    </SafeAreaView>
   );
 }
 

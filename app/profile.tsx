@@ -118,7 +118,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
@@ -308,7 +308,7 @@ export default function ProfileScreen() {
 
         <View style={{ height: 60 }} />
       </ScrollView>
-    </>
+    </SafeAreaView>
   );
 }
 

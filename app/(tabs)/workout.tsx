@@ -206,7 +206,7 @@ export default function WorkoutScreen() {
   // ─── Render: Resumen ──────────────────────────────────────────────
   if (showSummary && finishedSession) {
     return (
-      <style={styles.safe}>
+      <SafeAreaView style={styles.safe}>
         <WorkoutSummary
           session={finishedSession}
           newPRs={newPRs}
@@ -214,14 +214,14 @@ export default function WorkoutScreen() {
           onMoodChange={setMood}
           onFinish={handleFinalFinish}
         />
-      </>
+      </SafeAreaView>
     );
   }
 
   // ─── Render: Sin sesión activa ────────────────────────────────────
   if (!activeSession) {
     return (
-      <style={styles.safe}>
+      <SafeAreaView style={styles.safe}>
         <View style={styles.headerBar}>
           <Text style={styles.pageTitle}>Entrenamiento</Text>
         </View>
@@ -230,7 +230,7 @@ export default function WorkoutScreen() {
           onStart={handleStartRoutine}
           onStartFreestyle={handleStartFreestyle}
         />
-      </>
+      </SafeAreaView>
     );
   }
 
@@ -250,9 +250,9 @@ export default function WorkoutScreen() {
   // Descanso activo
   if (isResting) {
     return (
-      <style={styles.safe}>
+      <SafeAreaView style={styles.safe}>
         <RestTimerOverlay onSkip={stopRest} />
-      </>
+      </SafeAreaView>
     );
   }
 
@@ -264,7 +264,7 @@ export default function WorkoutScreen() {
       .filter(Boolean) as string[];
 
     return (
-      <style={styles.safe}>
+      <SafeAreaView style={styles.safe}>
         <View style={styles.activeHeader}>
           <TouchableOpacity onPress={handleAbandon} style={styles.abandonBtn}>
             <Text style={styles.abandonText}>✕ Salir</Text>
@@ -323,12 +323,12 @@ export default function WorkoutScreen() {
           onSelect={handleAddExerciseToSession}
           onClose={() => setShowAddExercise(false)}
         />
-      </>
+      </SafeAreaView>
     );
   }
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       {/* Header con abandon + agregar */}
       <View style={styles.activeHeader}>
         <TouchableOpacity onPress={handleAbandon} style={styles.abandonBtn}>
@@ -381,7 +381,7 @@ export default function WorkoutScreen() {
         onSelect={handleAddExerciseToSession}
         onClose={() => setShowAddExercise(false)}
       />
-    </>
+    </SafeAreaView>
   );
 }
 

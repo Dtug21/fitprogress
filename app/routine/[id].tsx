@@ -49,9 +49,9 @@ export default function RoutineEditorScreen() {
 
   if (!routine) {
     return (
-      <style={styles.safe}>
+      <SafeAreaView style={styles.safe}>
         <Text style={styles.errorText}>Rutina no encontrada</Text>
-      </>
+      </SafeAreaView>
     );
   }
 
@@ -112,7 +112,7 @@ export default function RoutineEditorScreen() {
 
   if (showExercisePicker) {
     return (
-      <style={styles.safe}>
+      <SafeAreaView style={styles.safe}>
         <View style={styles.pickerHeader}>
           <TouchableOpacity onPress={() => { setShowExercisePicker(false); setSearchText(''); setFilterMuscle(null); }} style={styles.backBtn}>
             <Ionicons name="close" size={24} color={COLORS.textPrimary} />
@@ -174,12 +174,12 @@ export default function RoutineEditorScreen() {
           )}
           <View style={{ height: 40 }} />
         </ScrollView>
-      </>
+      </SafeAreaView>
     );
   }
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
@@ -263,7 +263,7 @@ export default function RoutineEditorScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
-    </>
+    </SafeAreaView>
   );
 }
 

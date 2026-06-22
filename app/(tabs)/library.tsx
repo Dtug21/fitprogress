@@ -111,7 +111,7 @@ export default function LibraryScreen() {
   const totalCount = exercises.length;
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       {/* Header */}
       <View style={styles.headerBar}>
         <View>
@@ -210,7 +210,7 @@ export default function LibraryScreen() {
           ) : null
         }
       />
-    </>
+    </SafeAreaView>
   );
 }
 

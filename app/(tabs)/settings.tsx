@@ -210,7 +210,7 @@ export default function SettingsScreen() {
   }
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       <View style={styles.headerBar}>
         <Text style={styles.pageTitle}>Configuración</Text>
       </View>
@@ -465,7 +465,7 @@ export default function SettingsScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
-    </>
+    </SafeAreaView>
   );
 }
 

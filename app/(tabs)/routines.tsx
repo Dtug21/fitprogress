@@ -44,7 +44,7 @@ export default function RoutinesScreen() {
   const DAY_NAMES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       <View style={styles.headerBar}>
         <Text style={styles.pageTitle}>Mis Rutinas</Text>
         <Text style={styles.pageCount}>{routines.length} rutinas</Text>
@@ -160,7 +160,7 @@ export default function RoutinesScreen() {
       <TouchableOpacity style={styles.fab} onPress={handleNewRoutine} activeOpacity={0.85}>
         <Ionicons name="add" size={30} color="#000" />
       </TouchableOpacity>
-    </>
+    </SafeAreaView>
   );
 }
 

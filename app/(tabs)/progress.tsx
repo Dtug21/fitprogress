@@ -99,7 +99,7 @@ export default function ProgressScreen() {
   const pr = selectedExerciseId ? personalRecords[selectedExerciseId] : null;
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       <View style={styles.headerBar}>
         <Text style={styles.pageTitle}>Mi Progreso</Text>
       </View>
@@ -396,7 +396,7 @@ export default function ProgressScreen() {
           </View>
         </View>
       </Modal>
-    </>
+    </SafeAreaView>
   );
 }
 

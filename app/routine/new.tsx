@@ -81,7 +81,7 @@ export default function NewRoutineWizard() {
   // ── Paso: elegir split ────────────────────────────────────────────────────
   if (step === 'split') {
     return (
-      <style={styles.safe}>
+      <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
             <Ionicons name="close" size={22} color={COLORS.textPrimary} />
@@ -158,7 +158,7 @@ export default function NewRoutineWizard() {
 
           <View style={{ height: 40 }} />
         </ScrollView>
-      </>
+      </SafeAreaView>
     );
   }
 
@@ -168,7 +168,7 @@ export default function NewRoutineWizard() {
     : null;
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => setStep('split')} style={styles.backBtn} activeOpacity={0.7}>
           <Ionicons name="arrow-back" size={22} color={COLORS.textPrimary} />
@@ -234,7 +234,7 @@ export default function NewRoutineWizard() {
 
         <View style={{ height: 60 }} />
       </ScrollView>
-    </>
+    </SafeAreaView>
   );
 }
 

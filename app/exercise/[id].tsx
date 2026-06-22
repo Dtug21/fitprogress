@@ -136,14 +136,14 @@ export default function ExerciseDetailScreen() {
 
   if (!exercise) {
     return (
-      <style={styles.safe}>
+      <SafeAreaView style={styles.safe}>
         <View style={styles.center}>
           <Text style={styles.notFound}>Ejercicio no encontrado</Text>
           <TouchableOpacity onPress={() => router.back()}>
             <Text style={styles.backLink}>← Volver</Text>
           </TouchableOpacity>
         </View>
-      </>
+      </SafeAreaView>
     );
   }
 
@@ -159,7 +159,7 @@ export default function ExerciseDetailScreen() {
     .filter((s) => s.length > 5);
 
   return (
-    <style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
@@ -387,7 +387,7 @@ export default function ExerciseDetailScreen() {
 
         <View style={{ height: 60 }} />
       </ScrollView>
-    </>
+    </SafeAreaView>
   );
 }
 
