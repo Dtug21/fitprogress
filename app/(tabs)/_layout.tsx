@@ -1,10 +1,9 @@
-import { View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
-import { Platform } from 'react-native';
+import { BottomTabBar, type BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 import { useWorkoutStore } from '../../stores/useWorkoutStore';
-import { useAppInsets } from '../../lib/safeArea';
 
 const PRIMARY = COLORS.primary;
 const INACTIVE = COLORS.textMuted;
@@ -29,42 +28,42 @@ const TABS: TabConfig[] = [
   { name: 'settings', title: 'Config', icon: 'settings-outline', iconActive: 'settings' },
 ];
 
-export default function TabLayout() {
-  const insets = useAppInsets();
-  const activeSession = useWorkoutStore((s) => s.activeSession);
+function AppTabBar(props: BottomTabBarProps) {
+  const focusedKey = props.state.routes[props.state.index].key;
+  const tabStyle = StyleSheet.flatten(props.descriptors[focusedKey].options.tabBarStyle);
+  if (tabStyle?.display === 'none') {
+    return null;
+  }
 
-  const tabBarStyle = activeSession
-    ? { display: 'none' as const }
-    : {
-        backgroundColor: BG,
-        borderTopColor: BORDER,
-        borderTopWidth: 1,
-        paddingTop: 4,
-        paddingBottom: insets.bottom,
-        minHeight: 50 + insets.bottom,
-        elevation: 0,
-      };
+  return (
+    <BottomTabBar
+      {...props}
+      style={[
+        {
+          backgroundColor: BG,
+          borderTopColor: BORDER,
+          borderTopWidth: 1,
+        },
+        props.style,
+      ]}
+    />
+  );
+}
+
+export default function TabLayout() {
+  const activeSession = useWorkoutStore((s) => s.activeSession);
 
   return (
     <Tabs
+      tabBar={(props) => <AppTabBar {...props} />}
       screenOptions={{
         tabBarActiveTintColor: PRIMARY,
         tabBarInactiveTintColor: INACTIVE,
-        tabBarStyle,
-        tabBarBackground: () => <View style={{ flex: 1, backgroundColor: BG }} />,
-        safeAreaInsets: { top: 0, right: 0, bottom: 0, left: 0 },
+        tabBarStyle: activeSession ? { display: 'none' } : undefined,
         tabBarHideOnKeyboard: true,
-        tabBarItemStyle: {
-          paddingTop: 2,
-          paddingBottom: Platform.OS === 'ios' ? 2 : 4,
-        },
-        tabBarIconStyle: {
-          marginBottom: -2,
-        },
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: '500',
-          marginTop: 0,
         },
         headerShown: false,
         sceneStyle: { backgroundColor: BG },

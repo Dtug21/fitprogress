@@ -7,7 +7,6 @@ type ScreenVariant = 'tab' | 'stack' | 'full';
 interface ScreenProps {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
-  /** tab: notch arriba, tab bar abajo | stack: pantalla completa con home indicator | full: sin insets */
   variant?: ScreenVariant;
 }
 

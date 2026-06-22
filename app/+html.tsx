@@ -14,14 +14,12 @@ export default function Root({ children }: { children: ReactNode }) {
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no, viewport-fit=cover"
         />
 
-        {/* PWA */}
         <meta name="application-name" content="FitProgress" />
         <meta name="description" content="Tu app de entrenamiento con progresión inteligente" />
         <meta name="theme-color" content="#0B0B0C" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="manifest" href={`${BASE}/manifest.webmanifest`} />
 
-        {/* iOS PWA — abrir desde pantalla de inicio oculta Safari */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="FitProgress" />
@@ -37,10 +35,9 @@ export default function Root({ children }: { children: ReactNode }) {
 
 const globalStyles = `
 html {
+  width: 100%;
   height: 100%;
   height: -webkit-fill-available;
-  height: 100dvh;
-  width: 100%;
   background-color: #0B0B0C;
   overflow: hidden;
 }
@@ -51,23 +48,25 @@ body {
   width: 100%;
   height: 100%;
   height: -webkit-fill-available;
-  height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none;
   -webkit-text-size-adjust: 100%;
   touch-action: manipulation;
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 #root {
   display: flex;
-  flex: 1;
+  flex-direction: column;
   width: 100%;
   height: 100%;
-  height: 100dvh;
-  min-height: 100%;
+  min-height: -webkit-fill-available;
   background-color: #0B0B0C;
   box-sizing: border-box;
+  overflow: hidden;
 }
 * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 input, textarea, select { font-size: 16px; }
