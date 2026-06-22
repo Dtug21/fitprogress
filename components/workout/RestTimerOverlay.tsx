@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
 import { useWorkoutStore } from '../../stores/useWorkoutStore';
@@ -7,56 +7,101 @@ import { formatDuration } from '../../utils/formatters';
 
 interface RestTimerOverlayProps {
   onSkip: () => void;
+  totalSeconds: number;
 }
 
-export function RestTimerOverlay({ onSkip }: RestTimerOverlayProps) {
-  const { restSecondsRemaining, tickRest, isResting } = useWorkoutStore();
+// Beep al terminar el descanso. En web usa Web Audio (suena en la PWA);
+// en nativo cae a una vibración fuerte.
+function playRestDoneSound() {
+  if (Platform.OS === 'web') {
+    try {
+      const Ctx = (window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext });
+      const AudioCtx = Ctx.AudioContext ?? Ctx.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const beep = (freq: number, start: number, dur: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.001, ctx.currentTime + start);
+        gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + start);
+        osc.stop(ctx.currentTime + start + dur);
+      };
+      beep(880, 0, 0.18);
+      beep(1175, 0.2, 0.25);
+    } catch {
+      // sin audio disponible — no pasa nada
+    }
+  } else {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }
+}
+
+export function RestTimerOverlay({ onSkip, totalSeconds }: RestTimerOverlayProps) {
+  const { restSecondsRemaining, restEndsAt, tickRest, addRestSeconds, isResting } = useWorkoutStore();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const didVibrate = useRef(false);
+  const didFinish = useRef(false);
 
+  // Tick cada segundo (recalcula desde el timestamp objetivo).
   useEffect(() => {
-    if (!isResting) return;
-    didVibrate.current = false;
-
-    intervalRef.current = setInterval(() => {
-      tickRest();
-    }, 1000);
-
+    didFinish.current = false;
+    intervalRef.current = setInterval(() => tickRest(), 250);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isResting]);
+  }, [tickRest]);
 
+  // Al volver del bloqueo/segundo plano, recalcular de inmediato.
   useEffect(() => {
-    if (restSecondsRemaining === 0 && !didVibrate.current && isResting === false) {
-      didVibrate.current = true;
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-  }, [restSecondsRemaining, isResting]);
+    if (Platform.OS !== 'web') return;
+    const onVisible = () => { if (document.visibilityState === 'visible') tickRest(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [tickRest]);
 
-  const totalRest = 90; // default, podría venir de la rutina
-  const progress = restSecondsRemaining / totalRest;
+  // Sonido cuando llega a cero.
+  useEffect(() => {
+    if (restSecondsRemaining <= 0 && !didFinish.current) {
+      didFinish.current = true;
+      playRestDoneSound();
+    }
+  }, [restSecondsRemaining]);
+
+  const total = totalSeconds > 0 ? totalSeconds : 90;
+  const remaining = restEndsAt
+    ? Math.max(0, Math.round((restEndsAt - Date.now()) / 1000))
+    : restSecondsRemaining;
   const color =
-    restSecondsRemaining > 30 ? COLORS.primary :
-    restSecondsRemaining > 10 ? COLORS.warning : COLORS.danger;
+    remaining > 30 ? COLORS.primary :
+    remaining > 10 ? COLORS.warning : COLORS.danger;
 
   return (
     <View style={styles.overlay}>
       <Text style={styles.label}>Descanso</Text>
 
-      {/* Círculo de progreso simple */}
       <View style={styles.circleContainer}>
         <View style={[styles.circle, { borderColor: color }]}>
-          <Text style={[styles.time, { color }]}>
-            {formatDuration(restSecondsRemaining)}
-          </Text>
+          <Text style={[styles.time, { color }]}>{formatDuration(remaining)}</Text>
           <Text style={styles.timeSub}>restantes</Text>
         </View>
       </View>
 
-      <Text style={styles.nextLabel}>Siguiente serie</Text>
+      {/* Ajustar segundos */}
+      <View style={styles.adjustRow}>
+        <TouchableOpacity style={styles.adjustBtn} onPress={() => { addRestSeconds(-15); Haptics.selectionAsync(); }} activeOpacity={0.8}>
+          <Text style={styles.adjustText}>−15s</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.adjustBtn} onPress={() => { addRestSeconds(15); Haptics.selectionAsync(); }} activeOpacity={0.8}>
+          <Text style={styles.adjustText}>+15s</Text>
+        </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity style={styles.skipBtn} onPress={onSkip} activeOpacity={0.8}>
+      <TouchableOpacity style={styles.skipBtn} onPress={onSkip} activeOpacity={0.85}>
         <Text style={styles.skipText}>Saltar descanso →</Text>
       </TouchableOpacity>
     </View>
@@ -79,9 +124,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
-  circleContainer: {
-    marginBottom: SPACING.xl,
-  },
+  circleContainer: { marginBottom: SPACING.xl },
   circle: {
     width: 200,
     height: 200,
@@ -91,30 +134,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: COLORS.surface,
   },
-  time: {
-    fontSize: 48,
-    fontWeight: '800',
+  time: { fontSize: 48, fontWeight: '700', fontVariant: ['tabular-nums'] },
+  timeSub: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 4 },
+
+  adjustRow: { flexDirection: 'row', gap: SPACING.md, marginBottom: SPACING.xl },
+  adjustBtn: {
+    width: 96, height: 48, borderRadius: RADIUS.md,
+    backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
+    alignItems: 'center', justifyContent: 'center',
   },
-  timeSub: {
-    color: COLORS.textMuted,
-    fontSize: FONT.sm,
-    marginTop: 4,
-  },
-  nextLabel: {
-    color: COLORS.textPrimary,
-    fontSize: FONT.md,
-    fontWeight: '600',
-    marginBottom: SPACING.xl,
-  },
+  adjustText: { color: COLORS.textPrimary, fontSize: FONT.md, fontWeight: '600', fontVariant: ['tabular-nums'] },
+
   skipBtn: {
     paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.md,
-    borderRadius: RADIUS.md,
-    backgroundColor: COLORS.surface,
+    height: 52,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  skipText: {
-    color: COLORS.primary,
-    fontSize: FONT.md,
-    fontWeight: '700',
-  },
+  skipText: { color: COLORS.accentText, fontSize: FONT.md, fontWeight: '600' },
 });

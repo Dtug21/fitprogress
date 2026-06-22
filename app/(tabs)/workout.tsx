@@ -31,9 +31,11 @@ export default function WorkoutScreen() {
     endSession,
     addSet,
     addExerciseToSession,
+    incrementCurrentExerciseSets,
     removeSet,
     nextSet,
     nextExercise,
+    prevExercise,
     startRest,
     stopRest,
     replaceSessionExercise,
@@ -251,7 +253,7 @@ export default function WorkoutScreen() {
   if (isResting) {
     return (
       <SafeAreaView style={styles.safe}>
-        <RestTimerOverlay onSkip={stopRest} />
+        <RestTimerOverlay onSkip={stopRest} totalSeconds={routineEx?.rest_seconds ?? 90} />
       </SafeAreaView>
     );
   }
@@ -343,6 +345,7 @@ export default function WorkoutScreen() {
       </View>
 
       <ExerciseView
+        key={currentExerciseIndex}
         exercise={exercise}
         routineExercise={routineEx}
         currentSet={currentSetIndex + 1}
@@ -351,6 +354,9 @@ export default function WorkoutScreen() {
         currentExerciseIndex={currentExerciseIndex}
         suggestion={suggestion}
         loggedSets={activeSession.sets.filter((s) => s.exercise_id === routineEx.exercise_id && s.completed)}
+        canGoPrev={currentExerciseIndex > 0}
+        onPrevExercise={prevExercise}
+        onAddSet={incrementCurrentExerciseSets}
         onDeleteSet={(setId) => removeSet(setId)}
         onCompleteSet={handleCompleteSet}
         onSwapExercise={() => setShowAlternatives(true)}
