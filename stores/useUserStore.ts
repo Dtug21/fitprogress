@@ -34,7 +34,7 @@ export const useUserStore = create<UserState>()(
         name: '',
         mode: 'gym',
         experience_level: 'intermediate',
-        goals: ['mixed'],
+        goals: [],
         home_equipment: DEFAULT_HOME_EQUIPMENT,
         onboarding_completed: false,
         days_per_week: 4,

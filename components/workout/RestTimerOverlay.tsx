@@ -8,6 +8,7 @@ import { formatDuration } from '../../utils/formatters';
 interface RestTimerOverlayProps {
   onSkip: () => void;
   totalSeconds: number;
+  onEndEarly?: () => void;
 }
 
 // Beep al terminar el descanso. En web usa Web Audio (suena en la PWA);
@@ -42,7 +43,7 @@ function playRestDoneSound() {
   }
 }
 
-export function RestTimerOverlay({ onSkip, totalSeconds }: RestTimerOverlayProps) {
+export function RestTimerOverlay({ onSkip, totalSeconds, onEndEarly }: RestTimerOverlayProps) {
   const { restSecondsRemaining, restEndsAt, tickRest, addRestSeconds, isResting } = useWorkoutStore();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const didFinish = useRef(false);
@@ -104,17 +105,24 @@ export function RestTimerOverlay({ onSkip, totalSeconds }: RestTimerOverlayProps
       <TouchableOpacity style={styles.skipBtn} onPress={onSkip} activeOpacity={0.85}>
         <Text style={styles.skipText}>Saltar descanso →</Text>
       </TouchableOpacity>
+
+      {onEndEarly && (
+        <TouchableOpacity style={styles.endEarlyBtn} onPress={onEndEarly} activeOpacity={0.8}>
+          <Text style={styles.endEarlyText}>Terminar rutina anticipada</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: COLORS.bg,
     alignItems: 'center',
     justifyContent: 'center',
     padding: SPACING.xl,
+    zIndex: 100,
   },
   label: {
     color: COLORS.textSecondary,
@@ -154,4 +162,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   skipText: { color: COLORS.accentText, fontSize: FONT.md, fontWeight: '600' },
+  endEarlyBtn: {
+    marginTop: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: 12,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.warning,
+    backgroundColor: COLORS.warningDim,
+  },
+  endEarlyText: { color: COLORS.warning, fontSize: FONT.sm, fontWeight: '700' },
 });

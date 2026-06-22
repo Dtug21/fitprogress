@@ -29,9 +29,19 @@ interface WorkoutSummaryProps {
   mood: 1 | 2 | 3 | 4 | 5;
   onMoodChange: (mood: 1 | 2 | 3 | 4 | 5) => void;
   onFinish: () => void;
+  onSaveRoutine?: () => void;
+  canSaveRoutine?: boolean;
 }
 
-export function WorkoutSummary({ session, newPRs, mood, onMoodChange, onFinish }: WorkoutSummaryProps) {
+export function WorkoutSummary({
+  session,
+  newPRs,
+  mood,
+  onMoodChange,
+  onFinish,
+  onSaveRoutine,
+  canSaveRoutine,
+}: WorkoutSummaryProps) {
   const durationSec = session.finished_at
     ? Math.floor(
         (new Date(session.finished_at).getTime() - new Date(session.started_at).getTime()) / 1000
@@ -134,6 +144,16 @@ export function WorkoutSummary({ session, newPRs, mood, onMoodChange, onFinish }
           })}
         </View>
       </Card>
+
+      {canSaveRoutine && onSaveRoutine && (
+        <Button
+          label="Guardar como rutina"
+          variant="secondary"
+          icon="bookmark-outline"
+          onPress={onSaveRoutine}
+          fullWidth
+        />
+      )}
 
       <Button
         label="Finalizar"

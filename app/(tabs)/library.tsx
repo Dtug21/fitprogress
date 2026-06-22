@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   FlatList,
   ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Screen } from '../../components/ui/Screen';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -111,7 +111,7 @@ export default function LibraryScreen() {
   const totalCount = exercises.length;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen>
       {/* Header */}
       <View style={styles.headerBar}>
         <View>
@@ -210,13 +210,11 @@ export default function LibraryScreen() {
           ) : null
         }
       />
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.bg },
-
   headerBar: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.md, paddingBottom: SPACING.sm },
   pageTitle: { color: COLORS.textPrimary, fontSize: FONT.xxl, fontWeight: '600', letterSpacing: -0.4 },
   pageSubtitle: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2 },

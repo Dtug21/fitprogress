@@ -1,5 +1,5 @@
 import { View, StyleSheet,Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Screen } from '../../components/ui/Screen';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useWorkoutStore } from '../../stores/useWorkoutStore';
@@ -17,6 +17,7 @@ import { Routine, WorkoutSet, WorkoutSession, PersonalRecord, RIR, RoutineExerci
 import { generateId } from '../../utils/calculations';
 import { getExerciseById } from '../../data/exercises';
 import { suggestNextWeight, adaptSessionsToHistory, parseRepRange, exercisePRScore } from '../../lib/progression';
+import { buildRoutineFromSession } from '../../lib/workoutHistory';
 
 const FREESTYLE_ROUTINE_ID = 'freestyle';
 
@@ -41,8 +42,8 @@ export default function WorkoutScreen() {
     replaceSessionExercise,
     skipExercise } = useWorkoutStore();
 
-  const { routines } = useRoutineStore();
-  const { sessions, saveSession, updatePersonalRecord, personalRecords, unlockAchievement, bodyWeight } = useProgressStore();
+  const { routines, addRoutine } = useRoutineStore();
+  const { sessions, saveSession, updatePersonalRecord, personalRecords, unlockAchievement, bodyWeight, lastDeloadDate } = useProgressStore();
   const { profile } = useUserStore();
 
   // Peso corporal más reciente (para PRs y volumen de calistenia)
@@ -53,6 +54,7 @@ export default function WorkoutScreen() {
   const [showAddExercise, setShowAddExercise] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [finishedSession, setFinishedSession] = useState<WorkoutSession | null>(null);
+  const [finishedExercises, setFinishedExercises] = useState<RoutineExercise[]>([]);
   const [newPRs, setNewPRs] = useState<string[]>([]);
   const [mood, setMood] = useState<1 | 2 | 3 | 4 | 5>(3);
 
@@ -67,6 +69,7 @@ export default function WorkoutScreen() {
     const session: WorkoutSession = {
       id: generateId(),
       routine_id: routine.id,
+      routine_name: routine.name,
       date: new Date().toISOString().split('T')[0],
       mode: routine.mode,
       started_at: new Date().toISOString(),
@@ -79,6 +82,7 @@ export default function WorkoutScreen() {
     const session: WorkoutSession = {
       id: generateId(),
       routine_id: FREESTYLE_ROUTINE_ID,
+      routine_name: 'Entrenamiento libre',
       date: new Date().toISOString().split('T')[0],
       mode: profile.mode,
       started_at: new Date().toISOString(),
@@ -173,10 +177,17 @@ export default function WorkoutScreen() {
 
   // ─── Fin del entrenamiento ────────────────────────────────────────
   function handleFinishWorkout() {
+    const routineName = activeSession?.routine_name;
+    const exercisesSnapshot = [...sessionExercises];
     const finished = endSession(mood);
     if (!finished) return;
 
-    const withTime = { ...finished, finished_at: new Date().toISOString() };
+    const withTime = {
+      ...finished,
+      routine_name: routineName ?? finished.routine_name,
+      finished_at: new Date().toISOString(),
+    };
+    setFinishedExercises(exercisesSnapshot);
     setFinishedSession(withTime);
     saveSession(withTime);
     unlockAchievement('first_workout');
@@ -190,49 +201,93 @@ export default function WorkoutScreen() {
   function handleFinalFinish() {
     setShowSummary(false);
     setFinishedSession(null);
+    setFinishedExercises([]);
     setNewPRs([]);
     setMood(3);
   }
 
-  function handleAbandon() {
+  function handleSaveAsRoutine() {
+    if (!finishedSession) return;
+    const routine = buildRoutineFromSession(finishedSession, finishedExercises, routines);
+    addRoutine(routine);
+    Alert.alert('Rutina guardada', `"${routine.name}" está en Mis Rutinas → Manuales.`);
+  }
+
+  function handleEndEarly() {
+    const completedCount = activeSession?.sets.filter((s) => s.completed).length ?? 0;
+    if (completedCount === 0) {
+      Alert.alert(
+        'Sin series registradas',
+        'Aún no completaste ninguna serie. Si sales, no se guardará esta sesión.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Salir sin guardar', style: 'destructive', onPress: () => { endSession(); } },
+        ],
+      );
+      return;
+    }
     Alert.alert(
-      'Abandonar entrenamiento',
-      '¿Seguro que quieres salir? Se perderá el progreso de la sesión actual.',
+      'Terminar rutina anticipada',
+      `Se guardará tu progreso (${completedCount} series registradas). Ideal si tienes que irte por una urgencia.`,
       [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Salir', style: 'destructive', onPress: () => { endSession(); setShowSummary(false); } },
-      ]
+        { text: 'Seguir entrenando', style: 'cancel' },
+        {
+          text: 'Terminar y guardar',
+          onPress: () => {
+            stopRest();
+            handleFinishWorkout();
+          },
+        },
+      ],
     );
   }
+
+  function handleAbandon() {
+    Alert.alert(
+      'Abandonar sin guardar',
+      '¿Salir y descartar todo? Usa "Terminar rutina anticipada" si quieres guardar lo que ya hiciste.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Descartar', style: 'destructive', onPress: () => { endSession(); setShowSummary(false); } },
+      ],
+    );
+  }
+
+  const screenVariant = activeSession ? 'stack' : 'tab';
 
   // ─── Render: Resumen ──────────────────────────────────────────────
   if (showSummary && finishedSession) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <Screen variant={screenVariant}>
         <WorkoutSummary
           session={finishedSession}
           newPRs={newPRs}
           mood={mood}
           onMoodChange={setMood}
           onFinish={handleFinalFinish}
+          onSaveRoutine={handleSaveAsRoutine}
+          canSaveRoutine={finishedExercises.length > 0 || finishedSession.sets.some((s) => s.completed)}
         />
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   // ─── Render: Sin sesión activa ────────────────────────────────────
   if (!activeSession) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <Screen variant={screenVariant}>
         <View style={styles.headerBar}>
           <Text style={styles.pageTitle}>Entrenamiento</Text>
         </View>
         <StartWorkout
           routines={routines}
+          profile={profile}
+          sessions={sessions}
+          lastDeloadDate={lastDeloadDate}
           onStart={handleStartRoutine}
           onStartFreestyle={handleStartFreestyle}
         />
-      </SafeAreaView>
+      </Screen>
     );
   }
 
@@ -249,15 +304,6 @@ export default function WorkoutScreen() {
     ? suggestNextWeight(exerciseHistory, parseRepRange(routineEx.target_reps), exercise.muscle_group)
     : { action: 'maintain_more_reps' as const, new_weight_kg: 0, message: '', reasoning: '' };
 
-  // Descanso activo
-  if (isResting) {
-    return (
-      <SafeAreaView style={styles.safe}>
-        <RestTimerOverlay onSkip={stopRest} totalSeconds={routineEx?.rest_seconds ?? 90} />
-      </SafeAreaView>
-    );
-  }
-
   // ─── Hub de sesión: terminó los ejercicios, puede agregar otro o cerrar ──
   if (!exercise || !routineEx) {
     const completedSetsCount = activeSession.sets.length;
@@ -266,7 +312,7 @@ export default function WorkoutScreen() {
       .filter(Boolean) as string[];
 
     return (
-      <SafeAreaView style={styles.safe}>
+      <Screen variant={screenVariant}>
         <View style={styles.activeHeader}>
           <TouchableOpacity onPress={handleAbandon} style={styles.abandonBtn}>
             <Text style={styles.abandonText}>✕ Salir</Text>
@@ -312,8 +358,9 @@ export default function WorkoutScreen() {
           </TouchableOpacity>
 
           {trainedExercises.length > 0 && (
-            <TouchableOpacity style={styles.hubFinishBtn} onPress={handleFinishWorkout} activeOpacity={0.8}>
-              <Text style={styles.hubFinishText}>Terminar entrenamiento</Text>
+            <TouchableOpacity style={styles.hubFinishBtn} onPress={handleEndEarly} activeOpacity={0.8}>
+              <Ionicons name="flag-outline" size={18} color={COLORS.warning} />
+              <Text style={styles.hubFinishText}>Terminar rutina anticipada</Text>
             </TouchableOpacity>
           )}
         </ScrollView>
@@ -325,12 +372,12 @@ export default function WorkoutScreen() {
           onSelect={handleAddExerciseToSession}
           onClose={() => setShowAddExercise(false)}
         />
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen variant={screenVariant}>
       {/* Header con abandon + agregar */}
       <View style={styles.activeHeader}>
         <TouchableOpacity onPress={handleAbandon} style={styles.abandonBtn}>
@@ -344,6 +391,7 @@ export default function WorkoutScreen() {
         </TouchableOpacity>
       </View>
 
+      <View style={styles.workoutBody}>
       <ExerciseView
         key={currentExerciseIndex}
         exercise={exercise}
@@ -366,7 +414,17 @@ export default function WorkoutScreen() {
             { text: 'Saltar', onPress: handleSkipExercise },
           ]);
         }}
+        onEndEarly={handleEndEarly}
       />
+
+      {isResting && (
+        <RestTimerOverlay
+          onSkip={stopRest}
+          totalSeconds={routineEx.rest_seconds ?? 90}
+          onEndEarly={handleEndEarly}
+        />
+      )}
+      </View>
 
       <AlternativesPicker
         visible={showAlternatives}
@@ -387,17 +445,17 @@ export default function WorkoutScreen() {
         onSelect={handleAddExerciseToSession}
         onClose={() => setShowAddExercise(false)}
       />
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.bg },
   headerBar: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.md,
     paddingBottom: SPACING.sm },
   pageTitle: { color: COLORS.textPrimary, fontSize: FONT.xxl, fontWeight: '800' },
+  workoutBody: { flex: 1, position: 'relative' },
 
   activeHeader: {
     flexDirection: 'row',
@@ -438,7 +496,7 @@ const styles = StyleSheet.create({
     gap: 8, height: 56, borderRadius: RADIUS.lg, backgroundColor: COLORS.primary, marginTop: SPACING.md },
   hubAddText: { color: COLORS.accentText, fontSize: FONT.md, fontWeight: '600' },
   hubFinishBtn: {
-    alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center',
-    height: 52, borderRadius: RADIUS.lg, backgroundColor: COLORS.surface,
-    borderWidth: 1, borderColor: COLORS.border, marginTop: SPACING.sm },
-  hubFinishText: { color: COLORS.textSecondary, fontSize: FONT.base, fontWeight: '600' } });
+    alignSelf: 'stretch', flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, height: 52, borderRadius: RADIUS.lg, backgroundColor: COLORS.warningDim,
+    borderWidth: 1, borderColor: COLORS.warning, marginTop: SPACING.sm },
+  hubFinishText: { color: COLORS.warning, fontSize: FONT.base, fontWeight: '600' } });

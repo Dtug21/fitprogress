@@ -1,7 +1,7 @@
 import {
   View, Text, StyleSheet,ScrollView,
   TouchableOpacity, TextInput, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Screen } from '../components/ui/Screen';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -71,7 +71,7 @@ export default function ProfileScreen() {
 
   const [name, setName] = useState(profile.name);
   const [mode, setMode] = useState<'home' | 'gym'>(profile.mode);
-  const [goals, setGoalsLocal] = useState<Goal[]>(profile.goals ?? ['mixed']);
+  const [goals, setGoalsLocal] = useState<Goal[]>(profile.goals ?? []);
   const [level, setLevel] = useState(profile.experience_level);
   const [equipment, setEquipment] = useState<Equipment[]>(profile.home_equipment);
   const [days, setDays] = useState(profile.days_per_week ?? 4);
@@ -118,7 +118,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen variant="stack">
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
@@ -308,14 +308,13 @@ export default function ProfileScreen() {
 
         <View style={{ height: 60 }} />
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 // ─── Estilos ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.bg },
   scroll: { paddingHorizontal: SPACING.lg, paddingBottom: 40, gap: SPACING.md, paddingTop: SPACING.sm },
 
   header: {

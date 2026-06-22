@@ -4,7 +4,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { View, StyleSheet, Platform, useWindowDimensions } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { ThemeProvider, DarkTheme } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
@@ -73,6 +73,8 @@ export default function RootLayout() {
 
   if (!ready) return null;
 
+  const isDesktopWeb = Platform.OS === 'web' && width > 768;
+
   return (
     <ThemeProvider value={{
       ...DarkTheme,
@@ -84,15 +86,16 @@ export default function RootLayout() {
         text: COLORS.textPrimary,
       }
     }}>
-      <View style={styles.webContainer}>
-        <View style={[styles.appWrapper, { 
-          maxWidth: Platform.OS === 'web' && width > 768 ? 600 : '100%',
-          boxShadow: Platform.OS === 'web' && width > 768 ? '0px 0px 20px rgba(0,0,0,0.5)' : undefined,
-          borderLeftWidth: Platform.OS === 'web' && width > 768 ? 1 : 0,
-          borderRightWidth: Platform.OS === 'web' && width > 768 ? 1 : 0,
-        }]}>
-          <SafeAreaProvider>
-            <StatusBar style="light" backgroundColor={COLORS.bg} />
+      <View style={[styles.shell, isDesktopWeb && styles.shellDesktop]}>
+        <View
+          style={[
+            styles.app,
+            isDesktopWeb && styles.appDesktop,
+            { maxWidth: isDesktopWeb ? 600 : '100%' },
+          ]}
+        >
+          <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+            <StatusBar style="light" translucent backgroundColor="transparent" />
             <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.bg } }}>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="onboarding/index" options={{ headerShown: false, animation: 'fade' }} />
@@ -110,17 +113,29 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
-  webContainer: {
+  shell: {
     flex: 1,
-    backgroundColor: '#000000', // Dark outer background for desktop
+    width: '100%',
+    backgroundColor: COLORS.bg,
+    ...(Platform.OS === 'web'
+      ? { minHeight: '100dvh' as unknown as number, height: '100dvh' as unknown as number }
+      : {}),
+  },
+  shellDesktop: {
+    backgroundColor: '#000000',
     alignItems: 'center',
   },
-  appWrapper: {
+  app: {
     flex: 1,
     width: '100%',
     backgroundColor: COLORS.bg,
     overflow: 'hidden',
+  },
+  appDesktop: {
     borderColor: COLORS.border,
-  }
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    boxShadow: '0px 0px 20px rgba(0,0,0,0.5)',
+  },
 });
 

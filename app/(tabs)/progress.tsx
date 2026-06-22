@@ -6,7 +6,7 @@ import {
   TextInput,
   Modal,
   FlatList } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Screen } from '../../components/ui/Screen';
 import { useState, useMemo } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useProgressStore } from '../../stores/useProgressStore';
@@ -99,7 +99,7 @@ export default function ProgressScreen() {
   const pr = selectedExerciseId ? personalRecords[selectedExerciseId] : null;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen>
       <View style={styles.headerBar}>
         <Text style={styles.pageTitle}>Mi Progreso</Text>
       </View>
@@ -396,12 +396,11 @@ export default function ProgressScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.bg },
   scroll: { flex: 1 },
   content: { paddingHorizontal: SPACING.lg, gap: SPACING.sm, paddingTop: SPACING.sm },
 

@@ -7,7 +7,7 @@ import {
   Alert,
   Switch,
   ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Screen } from '../../components/ui/Screen';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
@@ -210,7 +210,7 @@ export default function SettingsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen>
       <View style={styles.headerBar}>
         <Text style={styles.pageTitle}>Configuración</Text>
       </View>
@@ -326,7 +326,7 @@ export default function SettingsScreen() {
                     const next = selected
                       ? current.filter((g) => g !== opt.value)
                       : [...current, opt.value];
-                    updateProfile({ goals: next.length > 0 ? next : ['mixed'] });
+                    updateProfile({ goals: next });
                   }}
                 >
                   <Text style={[styles.optionText, selected && styles.optionTextActive]}>
@@ -465,12 +465,11 @@ export default function SettingsScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.bg },
   scroll: { flex: 1 },
   content: { paddingHorizontal: SPACING.lg, gap: SPACING.sm, paddingTop: SPACING.sm },
 

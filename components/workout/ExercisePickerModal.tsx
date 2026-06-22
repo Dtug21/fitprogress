@@ -1,7 +1,8 @@
 import {
-  View, Text, StyleSheet, Modal, SafeAreaView,
+  View, Text, StyleSheet, Modal,
   TextInput, ScrollView, TouchableOpacity,
 } from 'react-native';
+import { Screen } from '../ui/Screen';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { exercises } from '../../data/exercises';
@@ -57,7 +58,7 @@ export function ExercisePickerModal({
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={handleClose}>
-      <SafeAreaView style={s.safe}>
+      <Screen variant="stack">
         <View style={s.header}>
           <TouchableOpacity onPress={handleClose} style={s.backBtn}>
             <Ionicons name="close" size={24} color={COLORS.textPrimary} />
@@ -113,13 +114,12 @@ export function ExercisePickerModal({
           )}
           <View style={{ height: 40 }} />
         </ScrollView>
-      </SafeAreaView>
+      </Screen>
     </Modal>
   );
 }
 
 const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.bg },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm,

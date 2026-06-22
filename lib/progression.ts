@@ -73,7 +73,7 @@ export const HYPERTROPHY_WEEKLY_VOLUME_TARGET = 10;
 
 export const WEIGHT_INCREMENTS_KG: Record<MuscleGroupClass, number> = {
   upper_body: 2.5,
-  lower_body: 5,
+  lower_body: 2.5,
   core: 0,
 };
 

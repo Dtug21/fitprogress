@@ -1,16 +1,16 @@
 import {
   View, Text, StyleSheet,ScrollView,
   TouchableOpacity, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
-import { useRouter } from 'expo-router';
+import { Screen } from '../../components/ui/Screen';
+import { useState, useEffect } from 'react';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useUserStore } from '../../stores/useUserStore';
 import { useRoutineStore } from '../../stores/useRoutineStore';
 import { COLORS, SPACING, FONT, RADIUS } from '../../constants/theme';
 import {
-  SPLIT_OPTIONS, SplitOption, SplitType,
-  getTrainingParams, generateRoutine } from '../../lib/routineOptimizer';
+  SPLIT_OPTIONS, SplitOption,
+  getTrainingParams, generateRoutine, getRecommendedSplits } from '../../lib/routineOptimizer';
 import { generateId } from '../../utils/calculations';
 import { Goal } from '../../types';
 
@@ -21,21 +21,23 @@ const GOAL_LABELS: Record<string, string> = {
 
 export default function NewRoutineWizard() {
   const router = useRouter();
+  const { manual } = useLocalSearchParams<{ manual?: string }>();
   const { profile } = useUserStore();
   const { addRoutine } = useRoutineStore();
 
-  const userGoals = profile.goals ?? ['mixed'];
-  const params = getTrainingParams(userGoals, profile.experience_level);
+  const userGoals = profile.goals?.length ? profile.goals : [];
+  const effectiveGoals: Goal[] = userGoals.length > 0 ? userGoals : ['mixed'];
+  const params = getTrainingParams(effectiveGoals, profile.experience_level);
 
   const [step, setStep] = useState<'split' | 'preview'>('split');
   const [selectedSplit, setSelectedSplit] = useState<SplitOption | null>(null);
 
-  // Splits recomendados primero (matchean los objetivos del usuario)
-  const sortedSplits = [...SPLIT_OPTIONS].sort((a, b) => {
-    const aMatch = a.bestFor.some((g) => userGoals.includes(g as Goal)) ? 0 : 1;
-    const bMatch = b.bestFor.some((g) => userGoals.includes(g as Goal)) ? 0 : 1;
-    return aMatch - bMatch;
-  });
+  const recommended = getRecommendedSplits(profile, 6);
+  const recommendedIds = new Set(recommended.map((s) => s.id));
+  const sortedSplits = [
+    ...recommended,
+    ...SPLIT_OPTIONS.filter((s) => !recommendedIds.has(s.id)),
+  ];
 
   function handleSelectSplit(split: SplitOption) {
     setSelectedSplit(split);
@@ -47,7 +49,7 @@ export default function NewRoutineWizard() {
     const generated = generateRoutine(
       selectedSplit,
       profile.mode,
-      userGoals,
+      effectiveGoals,
       profile.experience_level,
       profile.home_equipment,
     );
@@ -59,7 +61,8 @@ export default function NewRoutineWizard() {
       mode: profile.mode,
       exercises: generated.exercises,
       created_at: now,
-      updated_at: now };
+      updated_at: now,
+      source: 'algorithm' as const };
     addRoutine(newRoutine);
     router.replace(`/routine/${newRoutine.id}`);
   }
@@ -73,15 +76,23 @@ export default function NewRoutineWizard() {
       mode: profile.mode,
       exercises: [],
       created_at: now,
-      updated_at: now };
+      updated_at: now,
+      source: 'manual' as const };
     addRoutine(newRoutine);
     router.replace(`/routine/${newRoutine.id}`);
   }
 
+  useEffect(() => {
+    if (manual === '1') {
+      handleManual();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [manual]);
+
   // ── Paso: elegir split ────────────────────────────────────────────────────
   if (step === 'split') {
     return (
-      <SafeAreaView style={styles.safe}>
+      <Screen variant="stack">
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
             <Ionicons name="close" size={22} color={COLORS.textPrimary} />
@@ -98,7 +109,7 @@ export default function NewRoutineWizard() {
           <View style={styles.goalsCard}>
             <Text style={styles.goalsTitle}>Tus objetivos actuales</Text>
             <View style={styles.goalsRow}>
-              {userGoals.map((g) => (
+              {(userGoals.length > 0 ? userGoals : ['mixed' as Goal]).map((g) => (
                 <View key={g} style={styles.goalChip}>
                   <Text style={styles.goalChipText}>{GOAL_LABELS[g] ?? g}</Text>
                 </View>
@@ -120,7 +131,7 @@ export default function NewRoutineWizard() {
           <Text style={styles.sectionSub}>Los marcados con estrella están recomendados para tus objetivos</Text>
 
           {sortedSplits.map((split) => {
-            const isRecommended = split.bestFor.some((g) => userGoals.includes(g as Goal));
+            const isRecommended = recommendedIds.has(split.id);
             return (
               <TouchableOpacity
                 key={split.id}
@@ -158,17 +169,17 @@ export default function NewRoutineWizard() {
 
           <View style={{ height: 40 }} />
         </ScrollView>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   // ── Paso: preview de la rutina generada ──────────────────────────────────
   const preview = selectedSplit
-    ? generateRoutine(selectedSplit, profile.mode, userGoals, profile.experience_level, profile.home_equipment)
+    ? generateRoutine(selectedSplit, profile.mode, effectiveGoals, profile.experience_level, profile.home_equipment)
     : null;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen variant="stack">
       <View style={styles.header}>
         <TouchableOpacity onPress={() => setStep('split')} style={styles.backBtn} activeOpacity={0.7}>
           <Ionicons name="arrow-back" size={22} color={COLORS.textPrimary} />
@@ -234,7 +245,7 @@ export default function NewRoutineWizard() {
 
         <View style={{ height: 60 }} />
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
@@ -248,7 +259,6 @@ function ParamBadge({ label, value, big }: { label: string; value: string; big?:
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.bg },
   header: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, gap: SPACING.sm },

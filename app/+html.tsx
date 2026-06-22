@@ -38,21 +38,36 @@ export default function Root({ children }: { children: ReactNode }) {
 const globalStyles = `
 html {
   height: 100%;
+  height: -webkit-fill-available;
   height: 100dvh;
+  width: 100%;
+  background-color: #0B0B0C;
+  overflow: hidden;
 }
 body {
   background-color: #0B0B0C;
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
+  height: -webkit-fill-available;
+  height: 100dvh;
+  overflow: hidden;
   overscroll-behavior: none;
-  min-height: 100%;
-  min-height: 100dvh;
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
 }
 #root {
-  min-height: 100%;
+  display: flex;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
   min-height: 100dvh;
+  background-color: #0B0B0C;
 }
-* { -webkit-tap-highlight-color: transparent; }
+* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+input, textarea, select { font-size: 16px; }
 @media (display-mode: standalone) {
   body { user-select: none; -webkit-user-select: none; }
 }`;

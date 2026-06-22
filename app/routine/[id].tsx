@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   TextInput,
   Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Screen } from '../../components/ui/Screen';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -49,9 +49,9 @@ export default function RoutineEditorScreen() {
 
   if (!routine) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <Screen variant="stack">
         <Text style={styles.errorText}>Rutina no encontrada</Text>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
@@ -112,7 +112,7 @@ export default function RoutineEditorScreen() {
 
   if (showExercisePicker) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <Screen variant="stack">
         <View style={styles.pickerHeader}>
           <TouchableOpacity onPress={() => { setShowExercisePicker(false); setSearchText(''); setFilterMuscle(null); }} style={styles.backBtn}>
             <Ionicons name="close" size={24} color={COLORS.textPrimary} />
@@ -174,12 +174,12 @@ export default function RoutineEditorScreen() {
           )}
           <View style={{ height: 40 }} />
         </ScrollView>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen variant="stack">
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
@@ -263,12 +263,11 @@ export default function RoutineEditorScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.bg },
   scroll: { flex: 1 },
   content: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.md, gap: SPACING.sm },
 

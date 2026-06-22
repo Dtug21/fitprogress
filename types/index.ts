@@ -72,6 +72,7 @@ export interface WorkoutSet {
 export interface WorkoutSession {
   id: string;
   routine_id: string;
+  routine_name?: string;
   date: string;
   mode: 'home' | 'gym';
   started_at: string;
@@ -100,6 +101,8 @@ export interface Routine {
   exercises: RoutineExercise[];
   created_at: string;
   updated_at: string;
+  /** algorithm = generada por el optimizador; manual = creada a mano; default = plantilla inicial */
+  source?: 'algorithm' | 'manual' | 'default';
 }
 
 export type Goal =

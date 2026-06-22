@@ -2,8 +2,10 @@ import {
   View,
   Text,
   StyleSheet,ScrollView,
-  TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+import { Screen } from '../../components/ui/Screen';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useUserStore } from '../../stores/useUserStore';
@@ -14,8 +16,16 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { COLORS, SPACING, FONT, RADIUS, WEIGHT, TRACKING, TEXT } from '../../constants/theme';
-import { getDayIndex, formatDate } from '../../utils/formatters';
+import { getDayIndex, formatDate, formatDuration } from '../../utils/formatters';
 import { exercises } from '../../data/exercises';
+import {
+  getYesterdaySession,
+  getRecentSessions,
+  getSessionLabel,
+  summarizeSession,
+  buildRoutineFromSession,
+} from '../../lib/workoutHistory';
+import { WorkoutSession, Routine } from '../../types';
 
 const MUSCLE_LABELS: Record<string, string> = {
   chest: 'Pecho', back: 'Espalda', shoulders: 'Hombros',
@@ -26,7 +36,7 @@ const MUSCLE_LABELS: Record<string, string> = {
 export default function HomeScreen() {
   const router = useRouter();
   const { profile, setMode } = useUserStore();
-  const { routines } = useRoutineStore();
+  const { routines, addRoutine } = useRoutineStore();
   const { sessions, streak } = useProgressStore();
 
   const todayIndex = getDayIndex();
@@ -47,16 +57,21 @@ export default function HomeScreen() {
   );
 
   const lastSession = sessions[sessions.length - 1];
+  const yesterdaySession = getYesterdaySession(sessions);
+  const recentSessions = getRecentSessions(sessions, 6).filter(
+    (s) => s.id !== yesterdaySession?.id,
+  );
+  const daysTarget = profile.days_per_week ?? 4;
+  const weekProgress = Math.min(100, Math.round((thisWeekSessions.length / daysTarget) * 100));
   const firstName = profile.name ? profile.name.split(' ')[0] : null;
   const greeting = firstName ? `Buenas, ${firstName}` : 'Buenas';
-  const daysTarget = profile.days_per_week ?? 4;
 
   const dateLabel = new Date()
     .toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric', month: 'short' })
     .replace('.', '');
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -82,6 +97,40 @@ export default function HomeScreen() {
             unit={weeklyVolume > 0 ? 't' : ''}
           />
         </View>
+
+        {/* Progreso semanal */}
+        <Card padding={SPACING.md}>
+          <View style={styles.progressHead}>
+            <Text style={styles.progressTitle}>Progreso de la semana</Text>
+            <Text style={styles.progressPct}>{weekProgress}%</Text>
+          </View>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${weekProgress}%` }]} />
+          </View>
+          <Text style={styles.progressSub}>
+            {thisWeekSessions.length} de {daysTarget} sesiones objetivo
+            {weeklyVolume > 0 ? ` · ${Math.round(weeklyVolume / 1000)}t volumen` : ''}
+          </Text>
+        </Card>
+
+        {/* Ayer */}
+        {yesterdaySession && (
+          <>
+            <View style={styles.sectionHead}>
+              <Text style={styles.sectionTitle}>Ayer</Text>
+              <Text style={styles.sectionMeta}>{formatDate(yesterdaySession.date)}</Text>
+            </View>
+            <SessionHistoryCard
+              session={yesterdaySession}
+              routines={routines}
+              onSave={() => {
+                const routine = buildRoutineFromSession(yesterdaySession, [], routines);
+                addRoutine(routine);
+                Alert.alert('Guardada', `"${routine.name}" en Mis Rutinas → Manuales.`);
+              }}
+            />
+          </>
+        )}
 
         {/* Entrenamiento de hoy */}
         <View style={styles.sectionHead}>
@@ -145,8 +194,32 @@ export default function HomeScreen() {
           </Card>
         )}
 
-        {/* Última sesión */}
-        {lastSession && (
+        {/* Historial reciente */}
+        {recentSessions.length > 0 && (
+          <>
+            <View style={styles.sectionHead}>
+              <Text style={styles.sectionTitle}>Entrenamientos recientes</Text>
+              <TouchableOpacity onPress={() => router.push('/progress')} activeOpacity={0.7}>
+                <Text style={styles.linkText}>Ver todo</Text>
+              </TouchableOpacity>
+            </View>
+            {recentSessions.map((session) => (
+              <SessionHistoryCard
+                key={session.id}
+                session={session}
+                routines={routines}
+                onSave={() => {
+                  const routine = buildRoutineFromSession(session, [], routines);
+                  addRoutine(routine);
+                  Alert.alert('Guardada', `"${routine.name}" en Mis Rutinas → Manuales.`);
+                }}
+              />
+            ))}
+          </>
+        )}
+
+        {/* Última sesión (resumen rápido si no hay ayer) */}
+        {lastSession && !yesterdaySession && recentSessions.length === 0 && (
           <>
             <View style={styles.sectionHead}>
               <Text style={styles.sectionTitle}>Último entrenamiento</Text>
@@ -195,7 +268,51 @@ export default function HomeScreen() {
           </>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
+  );
+}
+
+function SessionHistoryCard({
+  session,
+  routines,
+  onSave,
+}: {
+  session: WorkoutSession;
+  routines: Routine[];
+  onSave: () => void;
+}) {
+  const label = getSessionLabel(session, routines);
+  const summary = summarizeSession(session);
+
+  return (
+    <Card padding={SPACING.md} style={styles.historyCard}>
+      <View style={styles.historyTop}>
+        <View style={styles.iconChipSm}>
+          <Ionicons name="barbell-outline" size={18} color={COLORS.primary} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.historyTitle}>{label}</Text>
+          <Text style={styles.historyMeta}>
+            {formatDate(session.date)}
+            {summary.durationSec > 0 ? ` · ${formatDuration(summary.durationSec)}` : ''}
+          </Text>
+        </View>
+        {session.mood && <MoodDot mood={session.mood} />}
+      </View>
+      <Text style={styles.historyDetail}>
+        {summary.exerciseCount} ejercicios · {summary.setCount} series
+        {summary.volumeKg > 0 ? ` · ${summary.volumeKg} kg volumen` : ''}
+      </Text>
+      {summary.topExercises.length > 0 && (
+        <Text style={styles.historyExercises} numberOfLines={1}>
+          {summary.topExercises.join(' · ')}
+        </Text>
+      )}
+      <TouchableOpacity style={styles.saveRow} onPress={onSave} activeOpacity={0.75}>
+        <Ionicons name="bookmark-outline" size={16} color={COLORS.primary} />
+        <Text style={styles.saveRowText}>Guardar como rutina</Text>
+      </TouchableOpacity>
+    </Card>
   );
 }
 
@@ -233,7 +350,6 @@ function MoodDot({ mood }: { mood: number }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.bg },
   scroll: { flex: 1 },
   content: { padding: SPACING.lg, paddingBottom: 40, gap: SPACING.md },
 
@@ -306,4 +422,37 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.cardElevated,
     paddingHorizontal: 10, paddingVertical: 6, borderRadius: RADIUS.pill },
   moodDotInner: { width: 8, height: 8, borderRadius: 4 },
-  moodText: { color: COLORS.textSecondary, fontSize: FONT.sm, fontWeight: WEIGHT.medium } });
+  moodText: { color: COLORS.textSecondary, fontSize: FONT.sm, fontWeight: WEIGHT.medium },
+
+  progressHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  progressTitle: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: WEIGHT.semibold },
+  progressPct: { color: COLORS.primary, fontSize: FONT.md, fontWeight: WEIGHT.bold },
+  progressTrack: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.surface,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  progressFill: { height: '100%', backgroundColor: COLORS.primary, borderRadius: 4 },
+  progressSub: { color: COLORS.textMuted, fontSize: FONT.sm },
+
+  linkText: { color: COLORS.primary, fontSize: FONT.sm, fontWeight: WEIGHT.semibold },
+
+  historyCard: { gap: 6 },
+  historyTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  historyTitle: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: WEIGHT.semibold },
+  historyMeta: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2 },
+  historyDetail: { color: COLORS.textSecondary, fontSize: FONT.sm },
+  historyExercises: { color: COLORS.textMuted, fontSize: FONT.sm, fontStyle: 'italic' },
+  saveRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  saveRowText: { color: COLORS.primary, fontSize: FONT.sm, fontWeight: WEIGHT.semibold },
+});

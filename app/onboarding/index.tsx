@@ -6,7 +6,7 @@ import {
   ScrollView,
   Switch,
   Animated } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Screen } from '../../components/ui/Screen';
 import { useState, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -61,7 +61,7 @@ export default function OnboardingScreen() {
   const [equipment, setEquipmentLocal] = useState<Equipment[]>([
     'dumbbells', 'adjustable_bench', 'bodyweight', 'long_bands',
   ]);
-  const [goals, setGoalsLocal] = useState<Goal[]>(['muscle_gain']);
+  const [goals, setGoalsLocal] = useState<Goal[]>([]);
   const [experience, setExperience] = useState<ExperienceLevel>('intermediate');
   const [daysPerWeek, setDaysPerWeek] = useState(4);
   const [weightKg, setWeightKg] = useState('');
@@ -95,13 +95,14 @@ export default function OnboardingScreen() {
     setName(name.trim() || 'Atleta');
     setMode(mode);
     setEquipment(equipment);
-    setGoals(goals.length > 0 ? goals : ['mixed']);
+    setGoals(goals);
 
     const parsedWeight = parseFloat(weightKg);
     const parsedHeight = parseFloat(heightCm);
     const parsedAge = parseInt(age, 10);
 
     updateProfile({
+      goals,
       experience_level: experience,
       days_per_week: daysPerWeek,
       ...(parsedWeight > 0 ? { weight_kg: parsedWeight } : {}),
@@ -144,7 +145,7 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen variant="stack">
       {/* Barra de progreso */}
       {step !== 'welcome' && step !== 'done' && (
         <View style={styles.progressBar}>
@@ -532,7 +533,7 @@ export default function OnboardingScreen() {
           </View>
         )}
       </Animated.View>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
@@ -547,7 +548,6 @@ function SummaryRow({ icon, label, value }: { icon: IconName; label: string; val
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.bg },
   container: { flex: 1, paddingHorizontal: SPACING.lg },
 
   progressBar: {
@@ -641,17 +641,46 @@ const styles = StyleSheet.create({
 
   metricsList: { gap: SPACING.sm, marginTop: SPACING.md },
   metricRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: COLORS.surface, borderRadius: RADIUS.lg,
-    borderWidth: 1, borderColor: COLORS.border,
-    paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm },
-  metricLabel: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '500' },
-  metricInputWrap: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    gap: SPACING.sm,
+  },
+  metricLabel: {
+    flex: 1,
+    flexShrink: 1,
+    color: COLORS.textPrimary,
+    fontSize: FONT.base,
+    fontWeight: '500',
+  },
+  metricInputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexShrink: 0,
+  },
   metricInput: {
-    minWidth: 64, textAlign: 'right',
-    color: COLORS.textPrimary, fontSize: FONT.lg, fontWeight: '600',
-    fontVariant: ['tabular-nums'], paddingVertical: 4 },
-  metricUnit: { color: COLORS.textMuted, fontSize: FONT.base, width: 36 },
+    width: 56,
+    height: 40,
+    textAlign: 'center',
+    color: COLORS.textPrimary,
+    fontSize: FONT.lg,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
+    backgroundColor: COLORS.bg,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingHorizontal: 6,
+    paddingVertical: 0,
+  },
+  metricUnit: { color: COLORS.textMuted, fontSize: FONT.sm, flexShrink: 0 },
 
   equipList: { flex: 1, backgroundColor: COLORS.surface, borderRadius: RADIUS.lg },
   equipRow: {

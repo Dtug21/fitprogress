@@ -134,11 +134,26 @@ export function RoutineExerciseCard({
                 </TouchableOpacity>
               ) : null}
             </View>
+            <View style={s.weightInputRow}>
+              <TextInput
+                style={s.weightInput}
+                value={re.target_weight_kg != null ? String(re.target_weight_kg) : ''}
+                onChangeText={(t) => {
+                  const parsed = parseFloat(t.replace(',', '.'));
+                  if (t.trim() === '') onUpdate({ target_weight_kg: undefined });
+                  else if (Number.isFinite(parsed) && parsed >= 0) onUpdate({ target_weight_kg: parsed });
+                }}
+                placeholder="Ej: 22.5"
+                placeholderTextColor={COLORS.textMuted}
+                keyboardType="decimal-pad"
+              />
+              <Text style={s.weightUnit}>kg</Text>
+            </View>
             <Stepper
               label=""
               value={re.target_weight_kg ?? 0}
               suffix="kg"
-              step={2.5}
+              step={0.5}
               min={0}
               onChange={(v) => onUpdate({ target_weight_kg: v === 0 ? undefined : v })}
             />
@@ -229,6 +244,21 @@ const s = StyleSheet.create({
   repsHint: { color: COLORS.textMuted, fontSize: 11 },
   weightHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   clearWeight: { color: COLORS.danger, fontSize: FONT.sm, fontWeight: '600' },
+  weightInputRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  weightInput: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    color: COLORS.textPrimary,
+    fontSize: FONT.md,
+    fontWeight: '600',
+    paddingHorizontal: SPACING.sm,
+    height: 46,
+    fontVariant: ['tabular-nums'],
+  },
+  weightUnit: { color: COLORS.textMuted, fontSize: FONT.sm, fontWeight: '600', width: 24 },
 
   actions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   actionBtn: {

@@ -4,6 +4,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  TextInput,
+  useWindowDimensions,
 } from 'react-native';
 import { useState, useRef, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -51,6 +53,7 @@ interface ExerciseViewProps {
   onCompleteSet: (weight: number, reps: number, rir: RIR) => void;
   onSwapExercise: () => void;
   onSkipExercise: () => void;
+  onEndEarly?: () => void;
 }
 
 function NumberInput({
@@ -58,25 +61,34 @@ function NumberInput({
   onChange,
   step,
   min,
+  max,
   label,
   suffix,
+  decimals = 1,
+  btnSize = 44,
 }: {
   value: number;
   onChange: (v: number) => void;
   step: number;
   min: number;
+  max?: number;
   label: string;
   suffix: string;
+  decimals?: number;
+  btnSize?: number;
 }) {
-  // Mantener pulsado: repite y acelera para saltos grandes sin perder el paso fino.
   const valueRef = useRef(value);
   valueRef.current = value;
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const ticksRef = useRef(0);
+  const [draft, setDraft] = useState('');
+  const [focused, setFocused] = useState(false);
 
   function clamp(v: number) {
-    return Math.max(min, Math.round(v * 10) / 10);
+    const rounded = Math.round(v * Math.pow(10, decimals)) / Math.pow(10, decimals);
+    const floored = Math.max(min, rounded);
+    return max != null ? Math.min(max, floored) : floored;
   }
 
   function applyStep(dir: 1 | -1, multiplier: number) {
@@ -85,12 +97,11 @@ function NumberInput({
   }
 
   function startHold(dir: 1 | -1) {
-    applyStep(dir, 1); // primer paso inmediato (= tap)
+    applyStep(dir, 1);
     ticksRef.current = 0;
     timeoutRef.current = setTimeout(() => {
       intervalRef.current = setInterval(() => {
         ticksRef.current += 1;
-        // Acelera: paso x1, luego x2, luego x5
         const mult = ticksRef.current > 18 ? 5 : ticksRef.current > 8 ? 2 : 1;
         applyStep(dir, mult);
       }, 110);
@@ -104,29 +115,60 @@ function NumberInput({
     intervalRef.current = null;
   }
 
+  function commitDraft() {
+    const parsed = parseFloat(draft.replace(',', '.'));
+    if (Number.isFinite(parsed)) {
+      onChange(clamp(parsed));
+    }
+    setDraft('');
+    setFocused(false);
+  }
+
   useEffect(() => endHold, []);
+
+  const displayValue = focused ? draft : String(value);
+  const fontSize = btnSize <= 40 ? 26 : 30;
 
   return (
     <View style={inputStyles.container}>
       <Text style={inputStyles.label}>{label}</Text>
       <View style={inputStyles.row}>
         <TouchableOpacity
-          style={inputStyles.btn}
+          style={[inputStyles.btn, { width: btnSize, height: btnSize }]}
           onPressIn={() => startHold(-1)}
           onPressOut={endHold}
           activeOpacity={0.7}
+          hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
         >
           <Text style={inputStyles.btnText}>−</Text>
         </TouchableOpacity>
         <View style={inputStyles.valueBox}>
-          <Text style={inputStyles.value}>{value}</Text>
+          <TextInput
+            style={[inputStyles.valueInput, { fontSize }]}
+            value={displayValue}
+            onChangeText={(t) => {
+              setDraft(t.replace(/[^0-9.,]/g, ''));
+              setFocused(true);
+            }}
+            onFocus={() => {
+              setFocused(true);
+              setDraft(String(value));
+            }}
+            onBlur={commitDraft}
+            onSubmitEditing={commitDraft}
+            keyboardType="decimal-pad"
+            returnKeyType="done"
+            selectTextOnFocus
+            maxLength={6}
+          />
           <Text style={inputStyles.suffix}>{suffix}</Text>
         </View>
         <TouchableOpacity
-          style={inputStyles.btn}
+          style={[inputStyles.btn, { width: btnSize, height: btnSize }]}
           onPressIn={() => startHold(1)}
           onPressOut={endHold}
           activeOpacity={0.7}
+          hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
         >
           <Text style={inputStyles.btnText}>+</Text>
         </TouchableOpacity>
@@ -136,22 +178,53 @@ function NumberInput({
 }
 
 const inputStyles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center' },
-  label: { color: COLORS.textMuted, fontSize: FONT.sm, fontWeight: '600', marginBottom: SPACING.sm, textTransform: 'uppercase', letterSpacing: 0.5 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  container: { width: '100%', alignSelf: 'stretch', minWidth: 0 },
+  label: {
+    color: COLORS.textMuted,
+    fontSize: FONT.sm,
+    fontWeight: '600',
+    marginBottom: SPACING.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    textAlign: 'center',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    width: '100%',
+    maxWidth: '100%',
+    alignSelf: 'center',
+    justifyContent: 'center',
+  },
   btn: {
-    width: 52,
-    height: 52,
     borderRadius: RADIUS.md,
     backgroundColor: COLORS.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
+    flexShrink: 0,
   },
-  btnText: { color: COLORS.textPrimary, fontSize: 24, fontWeight: '300' },
-  valueBox: { alignItems: 'center', minWidth: 80 },
-  value: { color: COLORS.textPrimary, fontSize: 36, fontWeight: '800' },
+  btnText: { color: COLORS.textPrimary, fontSize: 20, fontWeight: '300' },
+  valueBox: {
+    flex: 1,
+    minWidth: 0,
+    maxWidth: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  valueInput: {
+    color: COLORS.textPrimary,
+    fontSize: 30,
+    fontWeight: '800',
+    textAlign: 'center',
+    width: '100%',
+    minWidth: 0,
+    paddingVertical: 2,
+    paddingHorizontal: 2,
+    fontVariant: ['tabular-nums'],
+  },
   suffix: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2 },
 });
 
@@ -171,16 +244,59 @@ export function ExerciseView({
   onCompleteSet,
   onSwapExercise,
   onSkipExercise,
+  onEndEarly,
 }: ExerciseViewProps) {
+  const { width } = useWindowDimensions();
+  const stackedInputs = width < 520;
+  const inputBtnSize = width < 380 ? 40 : 44;
+
   const defaultReps = parseInt(routineExercise.target_reps.split('-')[0]) || 8;
   const repMin = parseRepMin(routineExercise.target_reps);
 
-  const [weight, setWeight] = useState(
-    suggestion.new_weight_kg > 0 ? suggestion.new_weight_kg : (routineExercise.target_weight_kg ?? 0)
-  );
-  const [reps, setReps] = useState(defaultReps);
-  const [rir, setRir] = useState<RIR>(2);
+  function valuesFromLogged() {
+    const last = [...loggedSets].filter((s) => s.completed).pop();
+    if (last) {
+      return {
+        weight: last.weight_kg,
+        reps: last.reps > 0 ? last.reps : defaultReps,
+        rir: (last.rir ?? 2) as RIR,
+      };
+    }
+    return {
+      weight: suggestion.new_weight_kg > 0
+        ? suggestion.new_weight_kg
+        : (routineExercise.target_weight_kg ?? 0),
+      reps: defaultReps,
+      rir: 2 as RIR,
+    };
+  }
+
+  const [weight, setWeight] = useState(() => valuesFromLogged().weight);
+  const [reps, setReps] = useState(() => valuesFromLogged().reps);
+  const [rir, setRir] = useState<RIR>(() => valuesFromLogged().rir);
   const [showInstructions, setShowInstructions] = useState(false);
+
+  // Tras cada serie reutiliza peso/reps de la anterior (incluye ajuste por RIR).
+  useEffect(() => {
+    const completed = loggedSets.filter((s) => s.completed);
+    const last = completed[completed.length - 1];
+    if (!last) return;
+
+    let nextWeight = last.weight_kg;
+    let nextReps = last.reps > 0 ? last.reps : defaultReps;
+
+    if (last.rir === 0 && nextWeight > 0) {
+      const drop = Math.max(1, Math.round(nextWeight * 0.05));
+      nextWeight = Math.max(0, Math.round((nextWeight - drop) * 10) / 10);
+      nextReps = Math.max(repMin, nextReps - 1);
+    } else if (last.rir === 1) {
+      nextReps = Math.max(repMin, nextReps - 1);
+    }
+
+    setWeight(nextWeight);
+    setReps(nextReps);
+    setRir(2);
+  }, [currentSet, loggedSets.length, routineExercise.exercise_id]);
 
   const progressionIcon: keyof typeof Ionicons.glyphMap =
     suggestion.action === 'increase_weight' ? 'arrow-up-outline' :
@@ -194,20 +310,7 @@ export function ExerciseView({
   function handleComplete() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     onCompleteSet(weight, reps, rir);
-
-    // Auto-ajuste por fatiga: si quedó poca reserva, prepara la próxima serie.
-    if (rir === 0) {
-      // Al fallo: baja el peso ~5% (mínimo 1 kg) y apunta a una rep menos.
-      if (weight > 0) {
-        const drop = Math.max(1, Math.round(weight * 0.05));
-        setWeight(Math.max(0, Math.round((weight - drop) * 10) / 10));
-      }
-      setReps((r) => Math.max(repMin, r - 1));
-    } else if (rir === 1) {
-      // Muy difícil: mantiene peso, espera una rep menos.
-      setReps((r) => Math.max(repMin, r - 1));
-    }
-    setRir(2); // reinicia la reserva estimada para la próxima serie
+    setRir(2);
   }
 
   return (
@@ -279,26 +382,47 @@ export function ExerciseView({
           </View>
         )}
 
-        {/* Inputs peso y reps — paso de 1, mantén pulsado para ir más rápido */}
+        {/* Inputs peso y reps */}
         <View style={styles.inputsCard}>
-          <View style={styles.inputsRow}>
-            <NumberInput value={weight} onChange={setWeight} step={1} min={0} label="Peso" suffix="kg" />
-            <View style={styles.inputDivider} />
-            <NumberInput value={reps} onChange={setReps} step={1} min={1} label="Reps" suffix="reps" />
+          <View style={[styles.inputsRow, stackedInputs && styles.inputsRowStacked]}>
+            <NumberInput
+              value={weight}
+              onChange={setWeight}
+              step={0.5}
+              min={0}
+              label="Peso"
+              suffix="kg"
+              decimals={1}
+              btnSize={inputBtnSize}
+            />
+            {!stackedInputs && <View style={styles.inputDivider} />}
+            <NumberInput
+              value={reps}
+              onChange={setReps}
+              step={1}
+              min={1}
+              max={999}
+              label="Reps"
+              suffix="reps"
+              decimals={0}
+              btnSize={inputBtnSize}
+            />
           </View>
           {routineExercise.target_reps && (
-            <Text style={styles.targetReps}>Objetivo: {routineExercise.target_reps} reps · mantén ± para saltos</Text>
+            <Text style={styles.targetReps}>
+              Objetivo: {routineExercise.target_reps} reps · toca el número · ±0.5 kg
+            </Text>
           )}
         </View>
 
         {/* Selector de RIR */}
         <View style={styles.rirCard}>
           <Text style={styles.rirTitle}>¿Cuántas reps te quedaban en el tanque?</Text>
-          <View style={styles.rirRow}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.rirRow}>
             {RIR_OPTIONS.map((opt) => (
               <TouchableOpacity
                 key={opt.value}
-                style={[styles.rirBtn, rir === opt.value && styles.rirBtnActive]}
+                style={[styles.rirBtn, stackedInputs && styles.rirBtnNarrow, rir === opt.value && styles.rirBtnActive]}
                 onPress={() => { setRir(opt.value); Haptics.selectionAsync(); }}
                 activeOpacity={0.7}
               >
@@ -308,7 +432,7 @@ export function ExerciseView({
                 </Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
           {lowReserve && (
             <View style={styles.rirHint}>
               <Ionicons name="information-circle-outline" size={15} color={COLORS.warning} />
@@ -350,8 +474,10 @@ export function ExerciseView({
 
         {/* Botón completar (acción principal) */}
         <TouchableOpacity style={styles.completeBtn} onPress={handleComplete} activeOpacity={0.85}>
-          <Ionicons name="checkmark-circle" size={24} color={COLORS.accentText} />
-          <Text style={styles.completeBtnText}>Completar serie {currentSet}</Text>
+          <Ionicons name="checkmark-circle" size={22} color={COLORS.accentText} />
+          <Text style={styles.completeBtnText} numberOfLines={1}>
+            Completar serie {currentSet}
+          </Text>
         </TouchableOpacity>
 
         {/* Agregar serie extra a este ejercicio */}
@@ -379,6 +505,13 @@ export function ExerciseView({
           <Ionicons name="swap-horizontal-outline" size={18} color={COLORS.textMuted} />
           <Text style={styles.swapBtnText}>No puedo hacerlo — cambiar ejercicio</Text>
         </TouchableOpacity>
+
+        {onEndEarly && (
+          <TouchableOpacity style={styles.endEarlyBtn} onPress={onEndEarly} activeOpacity={0.8}>
+            <Ionicons name="flag-outline" size={18} color={COLORS.warning} />
+            <Text style={styles.endEarlyText}>Terminar rutina anticipada</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </View>
   );
@@ -392,14 +525,14 @@ const styles = StyleSheet.create({
   progressDone: { backgroundColor: COLORS.success },
   progressCurrent: { backgroundColor: COLORS.primary },
 
-  scroll: { padding: SPACING.lg, paddingTop: SPACING.sm, paddingBottom: 48, gap: SPACING.md },
+  scroll: { paddingHorizontal: SPACING.md, paddingTop: SPACING.sm, paddingBottom: 48, gap: SPACING.md },
 
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  headerLeft: { flex: 1 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: SPACING.sm },
+  headerLeft: { flex: 1, minWidth: 0 },
   muscleTag: { color: COLORS.primary, fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 4 },
-  exerciseName: { color: COLORS.textPrimary, fontSize: FONT.xxl, fontWeight: '600', lineHeight: 32 },
-  headerRight: { alignItems: 'center', paddingLeft: SPACING.md },
-  setCounter: { color: COLORS.primary, fontSize: 40, fontWeight: '600', lineHeight: 44, fontVariant: ['tabular-nums'] },
+  exerciseName: { color: COLORS.textPrimary, fontSize: FONT.xl, fontWeight: '600', lineHeight: 28 },
+  headerRight: { alignItems: 'center', paddingLeft: SPACING.xs, flexShrink: 0 },
+  setCounter: { color: COLORS.primary, fontSize: 32, fontWeight: '600', lineHeight: 36, fontVariant: ['tabular-nums'] },
   setLabel: { color: COLORS.textMuted, fontSize: FONT.sm },
 
   suggestionBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: SPACING.md, paddingVertical: 10, borderRadius: RADIUS.md },
@@ -412,10 +545,20 @@ const styles = StyleSheet.create({
   tipsTitle: { color: COLORS.textSecondary, fontSize: FONT.sm, fontWeight: '700', marginTop: 8 },
   tipItem: { color: COLORS.textMuted, fontSize: FONT.sm, lineHeight: 20 },
 
-  inputsCard: { backgroundColor: COLORS.card, borderRadius: RADIUS.lg, borderWidth: 1, borderColor: COLORS.border, padding: SPACING.lg, gap: SPACING.sm },
-  inputsRow: { flexDirection: 'row', alignItems: 'center' },
-  inputDivider: { width: 1, height: 60, backgroundColor: COLORS.border, marginHorizontal: SPACING.sm },
-  targetReps: { color: COLORS.textMuted, fontSize: FONT.sm, textAlign: 'center' },
+  inputsCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: SPACING.sm,
+    gap: SPACING.sm,
+    overflow: 'hidden',
+    alignSelf: 'stretch',
+  },
+  inputsRow: { flexDirection: 'row', alignItems: 'stretch', width: '100%' },
+  inputsRowStacked: { flexDirection: 'column', gap: SPACING.md },
+  inputDivider: { width: 1, backgroundColor: COLORS.border, marginHorizontal: SPACING.xs, alignSelf: 'stretch' },
+  targetReps: { color: COLORS.textMuted, fontSize: FONT.sm, textAlign: 'center', lineHeight: 18 },
 
   rirCard: {
     backgroundColor: COLORS.card,
@@ -426,9 +569,9 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   rirTitle: { color: COLORS.textSecondary, fontSize: FONT.sm, fontWeight: '600', textAlign: 'center' },
-  rirRow: { flexDirection: 'row', gap: 6 },
+  rirRow: { flexDirection: 'row', gap: 8, paddingVertical: 2 },
   rirBtn: {
-    flex: 1,
+    width: 72,
     alignItems: 'center',
     paddingVertical: 10,
     borderRadius: RADIUS.md,
@@ -437,6 +580,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     gap: 3,
   },
+  rirBtnNarrow: { width: 68 },
   rirBtnActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
   rirLabel: { color: COLORS.textMuted, fontSize: 10, fontWeight: '600', textAlign: 'center' },
   rirLabelActive: { color: COLORS.primary },
@@ -461,8 +605,23 @@ const styles = StyleSheet.create({
   loggedRir: { color: COLORS.textMuted, fontSize: FONT.sm, fontVariant: ['tabular-nums'] },
   loggedDelete: { padding: 2 },
 
-  completeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 60, borderRadius: RADIUS.lg, backgroundColor: COLORS.primary },
-  completeBtnText: { color: COLORS.accentText, fontSize: FONT.lg, fontWeight: '600' },
+  completeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    minHeight: 56,
+    paddingHorizontal: SPACING.md,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.primary,
+    alignSelf: 'stretch',
+  },
+  completeBtnText: {
+    color: COLORS.accentText,
+    fontSize: FONT.md,
+    fontWeight: '600',
+    flexShrink: 1,
+  },
 
   addSetBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -484,4 +643,11 @@ const styles = StyleSheet.create({
     height: 44, borderRadius: RADIUS.md, backgroundColor: 'transparent',
   },
   swapBtnText: { color: COLORS.textMuted, fontSize: FONT.sm, fontWeight: '600' },
+
+  endEarlyBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    height: 50, borderRadius: RADIUS.lg, marginTop: SPACING.xs,
+    backgroundColor: COLORS.warningDim, borderWidth: 1, borderColor: COLORS.warning,
+  },
+  endEarlyText: { color: COLORS.warning, fontSize: FONT.base, fontWeight: '600' },
 });

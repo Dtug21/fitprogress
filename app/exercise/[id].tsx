@@ -3,7 +3,7 @@ import {
   Text,
   StyleSheet,ScrollView,
   TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Screen } from '../../components/ui/Screen';
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -136,14 +136,14 @@ export default function ExerciseDetailScreen() {
 
   if (!exercise) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <Screen variant="stack">
         <View style={styles.center}>
           <Text style={styles.notFound}>Ejercicio no encontrado</Text>
           <TouchableOpacity onPress={() => router.back()}>
             <Text style={styles.backLink}>← Volver</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
@@ -159,7 +159,7 @@ export default function ExerciseDetailScreen() {
     .filter((s) => s.length > 5);
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen variant="stack">
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
@@ -387,7 +387,7 @@ export default function ExerciseDetailScreen() {
 
         <View style={{ height: 60 }} />
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
@@ -418,7 +418,6 @@ const sectionStyles = StyleSheet.create({
   body: { paddingHorizontal: SPACING.md, paddingBottom: SPACING.md, gap: 10 } });
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.bg },
   scroll: { paddingHorizontal: SPACING.lg, paddingBottom: 40, gap: SPACING.sm, paddingTop: SPACING.sm },
 
   header: {

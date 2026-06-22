@@ -3,11 +3,13 @@ import { Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../../constants/theme';
+import { useWorkoutStore } from '../../stores/useWorkoutStore';
 
 const PRIMARY = COLORS.primary;
 const INACTIVE = COLORS.textMuted;
 const BG = COLORS.bg;
 const BORDER = COLORS.border;
+const TAB_BAR_CONTENT = 52;
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -29,26 +31,34 @@ const TABS: TabConfig[] = [
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  const tabBarBottom = Math.max(insets.bottom, Platform.OS === 'web' ? 8 : 20);
+  const activeSession = useWorkoutStore((s) => s.activeSession);
+  const tabBarHeight = TAB_BAR_CONTENT + insets.bottom;
+
+  const tabBarStyle = activeSession
+    ? { display: 'none' as const }
+    : {
+        backgroundColor: BG,
+        borderTopColor: BORDER,
+        borderTopWidth: 1,
+        height: tabBarHeight,
+        paddingTop: 6,
+        paddingBottom: insets.bottom,
+      };
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: PRIMARY,
         tabBarInactiveTintColor: INACTIVE,
-        tabBarStyle: {
-          backgroundColor: BG,
-          borderTopColor: BORDER,
-          borderTopWidth: 1,
-          height: 80 + tabBarBottom,
-          paddingBottom: tabBarBottom + 10,
-          paddingTop: 10,
-        },
+        tabBarStyle,
+        tabBarHideOnKeyboard: true,
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '500',
+          marginBottom: Platform.OS === 'ios' ? 0 : 2,
         },
         headerShown: false,
+        sceneStyle: { backgroundColor: BG },
       }}
     >
       {TABS.map((tab) => (

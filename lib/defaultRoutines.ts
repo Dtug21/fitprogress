@@ -40,6 +40,7 @@ export function buildHomeFullBody(equipment: Equipment[]): Routine {
     exercises,
     created_at: now,
     updated_at: now,
+    source: 'default',
   };
 }
 
@@ -62,6 +63,7 @@ export function buildGymUpperLower(): Routine[] {
     ],
     created_at: now,
     updated_at: now,
+    source: 'default',
   };
 
   const lower: Routine = {
@@ -79,6 +81,7 @@ export function buildGymUpperLower(): Routine[] {
     ],
     created_at: now,
     updated_at: now,
+    source: 'default',
   };
 
   return [upper, lower];

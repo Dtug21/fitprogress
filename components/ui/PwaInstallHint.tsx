@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONT, SPACING, RADIUS } from '../../constants/theme';
 
@@ -22,6 +23,7 @@ function isIosSafari(): boolean {
 
 export function PwaInstallHint() {
   const [visible, setVisible] = useState(false);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
@@ -39,7 +41,7 @@ export function PwaInstallHint() {
   const ios = isIosSafari();
 
   return (
-    <View style={styles.wrap} pointerEvents="box-none">
+    <View style={[styles.wrap, { bottom: 58 + insets.bottom }]} pointerEvents="box-none">
       <View style={styles.card}>
         <View style={styles.header}>
           <Ionicons name="phone-portrait-outline" size={20} color={COLORS.primary} />
@@ -69,7 +71,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 88,
     paddingHorizontal: SPACING.md,
     zIndex: 9999,
   },
