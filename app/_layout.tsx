@@ -3,9 +3,8 @@ import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
-import { View, StyleSheet, Platform, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import { ThemeProvider, DarkTheme } from '@react-navigation/native';
-import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { useUserStore } from '../stores/useUserStore';
 import { PwaInstallHint } from '../components/ui/PwaInstallHint';
@@ -69,7 +68,7 @@ export default function RootLayout() {
 
   if (!ready) return null;
 
-  const isDesktopWeb = Platform.OS === 'web' && width > 768;
+  const isDesktop = width > 768;
 
   return (
     <ThemeProvider value={{
@@ -82,16 +81,15 @@ export default function RootLayout() {
         text: COLORS.textPrimary,
       },
     }}>
-      <View style={[styles.shell, isDesktopWeb && styles.shellDesktop]}>
+      <View style={[styles.shell, isDesktop && styles.shellDesktop]}>
         <View
           style={[
             styles.app,
-            isDesktopWeb && styles.appDesktop,
-            { maxWidth: isDesktopWeb ? 600 : '100%' },
+            isDesktop && styles.appDesktop,
+            { maxWidth: isDesktop ? 600 : '100%' },
           ]}
         >
           <AppSafeAreaProvider>
-            <StatusBar style="light" translucent backgroundColor="transparent" />
             <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.bg } }}>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="onboarding/index" options={{ headerShown: false, animation: 'fade' }} />

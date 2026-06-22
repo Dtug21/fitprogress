@@ -1,33 +1,18 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useAppInsets } from '../../lib/safeArea';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONT, SPACING, RADIUS } from '../../constants/theme';
+import { isIosSafari, isStandalonePwa } from '../../lib/pwa';
 
 const DISMISS_KEY = 'fitprogress-pwa-hint-dismissed';
-
-function isStandaloneWeb(): boolean {
-  if (typeof window === 'undefined') return true;
-  const nav = window.navigator as Navigator & { standalone?: boolean };
-  return (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    nav.standalone === true
-  );
-}
-
-function isIosSafari(): boolean {
-  if (typeof window === 'undefined') return false;
-  const ua = window.navigator.userAgent;
-  return /iPhone|iPad|iPod/i.test(ua) && !/CriOS|FxiOS|EdgiOS/i.test(ua);
-}
 
 export function PwaInstallHint() {
   const [visible, setVisible] = useState(false);
   const insets = useAppInsets();
 
   useEffect(() => {
-    if (Platform.OS !== 'web') return;
-    if (isStandaloneWeb()) return;
+    if (isStandalonePwa()) return;
     try {
       if (localStorage.getItem(DISMISS_KEY) === '1') return;
     } catch {
@@ -45,7 +30,7 @@ export function PwaInstallHint() {
       <View style={styles.card}>
         <View style={styles.header}>
           <Ionicons name="phone-portrait-outline" size={20} color={COLORS.primary} />
-          <Text style={styles.title}>Modo app nativa</Text>
+          <Text style={styles.title}>Instala la PWA</Text>
           <TouchableOpacity
             onPress={() => {
               setVisible(false);

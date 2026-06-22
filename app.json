@@ -8,26 +8,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "fitprogress",
     "userInterfaceStyle": "dark",
-    "ios": {
-      "supportsTablet": true,
-      "requireFullScreen": true,
-      "infoPlist": {
-        "UIStatusBarStyle": "UIStatusBarStyleLightContent",
-        "UIViewControllerBasedStatusBarAppearance": true
-      }
-    },
-    "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#0B0B0C",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
-      },
-      "predictiveBackGestureEnabled": false,
-      "edgeToEdgeEnabled": true,
-      "navigationBarColor": "#0B0B0C",
-      "softwareKeyboardLayoutMode": "resize"
-    },
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -56,19 +36,6 @@
     "experiments": {
       "typedRoutes": true,
       "baseUrl": "/fitprogress"
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "419f9fc3-63f8-468a-bb3b-32cc9253a7b0"
-      }
-    },
-    "runtimeVersion": {
-      "policy": "sdkVersion"
-    },
-
-    "updates": {
-      "url": "https://u.expo.dev/419f9fc3-63f8-468a-bb3b-32cc9253a7b0"
     }
   }
 }

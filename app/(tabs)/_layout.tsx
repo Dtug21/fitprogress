@@ -2,12 +2,11 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 import { useWorkoutStore } from '../../stores/useWorkoutStore';
-import { FitTabBar, getTabBarTotalHeight } from '../../components/ui/FitTabBar';
-import { useAppInsets } from '../../lib/safeArea';
 
 const PRIMARY = COLORS.primary;
 const INACTIVE = COLORS.textMuted;
 const BG = COLORS.bg;
+const BORDER = COLORS.border;
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -29,17 +28,24 @@ const TABS: TabConfig[] = [
 
 export default function TabLayout() {
   const activeSession = useWorkoutStore((s) => s.activeSession);
-  const insets = useAppInsets();
-  const tabBarHeight = getTabBarTotalHeight(insets.bottom);
 
   return (
     <Tabs
-      tabBar={(props) => <FitTabBar {...props} />}
       screenOptions={{
         tabBarActiveTintColor: PRIMARY,
         tabBarInactiveTintColor: INACTIVE,
-        tabBarStyle: activeSession ? { display: 'none' } : { height: tabBarHeight },
+        tabBarStyle: activeSession
+          ? { display: 'none' }
+          : {
+              backgroundColor: BG,
+              borderTopColor: BORDER,
+              borderTopWidth: 1,
+            },
         tabBarHideOnKeyboard: true,
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: '500',
+        },
         headerShown: false,
         sceneStyle: { backgroundColor: BG },
       }}
@@ -50,10 +56,10 @@ export default function TabLayout() {
           name={tab.name}
           options={{
             title: tab.title,
-            tabBarIcon: ({ focused, color, size }) => (
+            tabBarIcon: ({ focused, color }) => (
               <Ionicons
                 name={focused ? tab.iconActive : tab.icon}
-                size={size}
+                size={22}
                 color={color}
               />
             ),

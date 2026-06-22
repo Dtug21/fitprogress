@@ -1,6 +1,6 @@
-import { Platform } from 'react-native';
 import { useSafeAreaInsets, type Metrics } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
+import { isStandalonePwa } from './pwa';
 
 /** Lee insets reales del CSS env() en Safari / PWA iOS. */
 export function readWebSafeAreaInsets(): {
@@ -33,21 +33,12 @@ export function readWebSafeAreaInsets(): {
   const right = parseFloat(style.paddingRight) || 0;
   document.body.removeChild(probe);
 
-  if (isStandaloneWeb() && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+  if (isStandalonePwa() && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
     if (bottom === 0) bottom = 34;
     if (top === 0) top = 47;
   }
 
   return { top, bottom, left, right };
-}
-
-export function isStandaloneWeb(): boolean {
-  if (typeof window === 'undefined') return false;
-  const nav = window.navigator as Navigator & { standalone?: boolean };
-  return (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    nav.standalone === true
-  );
 }
 
 export function buildWebInitialMetrics(): Metrics | undefined {
@@ -60,24 +51,15 @@ export function buildWebInitialMetrics(): Metrics | undefined {
 
   return {
     insets,
-    frame: {
-      x: 0,
-      y: 0,
-      width,
-      height,
-    },
+    frame: { x: 0, y: 0, width, height },
   };
 }
 
 /** Re-sincroniza insets tras rotación o cambio de modo PWA. */
 export function useWebSafeAreaMetrics(): Metrics | undefined {
-  const [metrics, setMetrics] = useState<Metrics | undefined>(() =>
-    Platform.OS === 'web' ? buildWebInitialMetrics() : undefined,
-  );
+  const [metrics, setMetrics] = useState<Metrics | undefined>(() => buildWebInitialMetrics());
 
   useEffect(() => {
-    if (Platform.OS !== 'web') return;
-
     const update = () => setMetrics(buildWebInitialMetrics());
     update();
     window.addEventListener('resize', update);
@@ -94,6 +76,5 @@ export function useWebSafeAreaMetrics(): Metrics | undefined {
 }
 
 export function useAppInsets() {
-  const insets = useSafeAreaInsets();
-  return insets;
+  return useSafeAreaInsets();
 }

@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useState, useRef, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
+import { vibrateTap, vibrateSuccess } from '../../lib/pwa';
 import { Exercise, RoutineExercise, ProgressionSuggestion, RIR, WorkoutSet } from '../../types';
 import { RIR_LABELS } from '../../lib/progression';
 import { COLORS, SPACING, FONT, RADIUS } from '../../constants/theme';
@@ -93,7 +93,7 @@ function NumberInput({
 
   function applyStep(dir: 1 | -1, multiplier: number) {
     onChange(clamp(valueRef.current + dir * step * multiplier));
-    Haptics.selectionAsync();
+    vibrateTap();
   }
 
   function startHold(dir: 1 | -1) {
@@ -308,7 +308,7 @@ export function ExerciseView({
   const lowReserve = rir <= 1; // esfuerzo muy alto
 
   function handleComplete() {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    vibrateSuccess();
     onCompleteSet(weight, reps, rir);
     setRir(2);
   }
@@ -423,7 +423,7 @@ export function ExerciseView({
               <TouchableOpacity
                 key={opt.value}
                 style={[styles.rirBtn, stackedInputs && styles.rirBtnNarrow, rir === opt.value && styles.rirBtnActive]}
-                onPress={() => { setRir(opt.value); Haptics.selectionAsync(); }}
+                onPress={() => { setRir(opt.value); vibrateTap(); }}
                 activeOpacity={0.7}
               >
                 <Ionicons name={opt.icon} size={18} color={rir === opt.value ? COLORS.primary : COLORS.textMuted} />
@@ -481,7 +481,7 @@ export function ExerciseView({
         </TouchableOpacity>
 
         {/* Agregar serie extra a este ejercicio */}
-        <TouchableOpacity style={styles.addSetBtn} onPress={() => { onAddSet(); Haptics.selectionAsync(); }} activeOpacity={0.8}>
+        <TouchableOpacity style={styles.addSetBtn} onPress={() => { onAddSet(); vibrateTap(); }} activeOpacity={0.8}>
           <Ionicons name="add" size={18} color={COLORS.primary} />
           <Text style={styles.addSetText}>Agregar serie</Text>
         </TouchableOpacity>
