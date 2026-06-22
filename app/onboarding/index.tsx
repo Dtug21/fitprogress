@@ -1,14 +1,12 @@
 import {
   View,
   Text,
-  StyleSheet,
-  SafeAreaView,
-  TextInput,
+  StyleSheet,TextInput,
   TouchableOpacity,
   ScrollView,
   Switch,
-  Animated,
-} from 'react-native';
+  Animated } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -108,8 +106,7 @@ export default function OnboardingScreen() {
       days_per_week: daysPerWeek,
       ...(parsedWeight > 0 ? { weight_kg: parsedWeight } : {}),
       ...(parsedHeight > 0 ? { height_cm: parsedHeight } : {}),
-      ...(parsedAge > 0 ? { age: parsedAge } : {}),
-    });
+      ...(parsedAge > 0 ? { age: parsedAge } : {}) });
 
     // Si dio peso corporal, lo registra como primer punto del historial
     if (parsedWeight > 0) {
@@ -147,7 +144,7 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <style={styles.safe}>
       {/* Barra de progreso */}
       {step !== 'welcome' && step !== 'done' && (
         <View style={styles.progressBar}>
@@ -535,7 +532,7 @@ export default function OnboardingScreen() {
           </View>
         )}
       </Animated.View>
-    </SafeAreaView>
+    </>
   );
 }
 
@@ -558,8 +555,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.border,
     marginHorizontal: SPACING.lg,
     marginTop: SPACING.sm,
-    borderRadius: 2,
-  },
+    borderRadius: 2 },
   progressFill: { height: 3, backgroundColor: COLORS.primary, borderRadius: 2 },
 
   centered: {
@@ -567,12 +563,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: SPACING.md,
-    paddingBottom: 40,
-  },
+    paddingBottom: 40 },
   logoChip: {
     width: 88, height: 88, borderRadius: RADIUS.xl,
-    backgroundColor: COLORS.primaryDim, alignItems: 'center', justifyContent: 'center', marginBottom: 8,
-  },
+    backgroundColor: COLORS.primaryDim, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   appName: { color: COLORS.primary, fontSize: 40, fontWeight: '600', letterSpacing: -1 },
   tagline: { color: COLORS.textSecondary, fontSize: FONT.lg, fontWeight: '600' },
   description: {
@@ -580,16 +574,14 @@ const styles = StyleSheet.create({
     fontSize: FONT.base,
     textAlign: 'center',
     lineHeight: 22,
-    paddingHorizontal: SPACING.lg,
-  },
+    paddingHorizontal: SPACING.lg },
 
   stepContainer: { flex: 1, paddingTop: SPACING.xl, gap: SPACING.md },
   stepContainerScroll: { flex: 1, paddingTop: SPACING.xl, gap: SPACING.sm },
   stepIconChip: {
     width: 64, height: 64, borderRadius: RADIUS.lg,
     backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
-    alignItems: 'center', justifyContent: 'center', marginBottom: 4,
-  },
+    alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   stepTitle: { color: COLORS.textPrimary, fontSize: FONT.xl, fontWeight: '600' },
   stepSub: { color: COLORS.textMuted, fontSize: FONT.base, lineHeight: 22 },
 
@@ -603,8 +595,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     fontSize: FONT.lg,
     fontWeight: '600',
-    marginTop: SPACING.sm,
-  },
+    marginTop: SPACING.sm },
 
   modeOptions: { flexDirection: 'row', gap: SPACING.md, marginTop: SPACING.sm },
   modeCard: {
@@ -615,8 +606,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     padding: SPACING.lg,
     alignItems: 'center',
-    gap: 6,
-  },
+    gap: 6 },
   modeCardActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
   modeIcon: { marginBottom: 4 },
   modeLabel: { color: COLORS.textSecondary, fontSize: FONT.base, fontWeight: '700' },
@@ -631,8 +621,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: SPACING.md,
     backgroundColor: COLORS.surface, borderRadius: RADIUS.lg,
     borderWidth: 1.5, borderColor: COLORS.border,
-    padding: SPACING.md, marginBottom: SPACING.sm,
-  },
+    padding: SPACING.md, marginBottom: SPACING.sm },
   selectCardActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
   selectInfo: { flex: 1 },
   selectLabel: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '600' },
@@ -643,8 +632,7 @@ const styles = StyleSheet.create({
   dayBig: {
     width: 88, height: 88, borderRadius: RADIUS.lg,
     backgroundColor: COLORS.surface, borderWidth: 1.5, borderColor: COLORS.border,
-    alignItems: 'center', justifyContent: 'center',
-  },
+    alignItems: 'center', justifyContent: 'center' },
   dayBigActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryDim },
   dayBigNum: { color: COLORS.textSecondary, fontSize: 32, fontWeight: '600', fontVariant: ['tabular-nums'] },
   dayBigNumActive: { color: COLORS.primary },
@@ -656,15 +644,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     backgroundColor: COLORS.surface, borderRadius: RADIUS.lg,
     borderWidth: 1, borderColor: COLORS.border,
-    paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm,
-  },
+    paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm },
   metricLabel: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '500' },
   metricInputWrap: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   metricInput: {
     minWidth: 64, textAlign: 'right',
     color: COLORS.textPrimary, fontSize: FONT.lg, fontWeight: '600',
-    fontVariant: ['tabular-nums'], paddingVertical: 4,
-  },
+    fontVariant: ['tabular-nums'], paddingVertical: 4 },
   metricUnit: { color: COLORS.textMuted, fontSize: FONT.base, width: 36 },
 
   equipList: { flex: 1, backgroundColor: COLORS.surface, borderRadius: RADIUS.lg },
@@ -673,8 +659,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.md,
     paddingVertical: 14,
-    gap: SPACING.sm,
-  },
+    gap: SPACING.sm },
   equipBorder: { borderBottomWidth: 1, borderBottomColor: COLORS.border },
   equipIcon: { width: 28, alignItems: 'center' },
   equipLabel: { flex: 1, color: COLORS.textPrimary, fontSize: FONT.base },
@@ -684,8 +669,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingBottom: SPACING.lg,
-    marginTop: SPACING.sm,
-  },
+    marginTop: SPACING.sm },
 
   primaryBtn: {
     backgroundColor: COLORS.primary,
@@ -693,8 +677,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: SPACING.xl,
     alignItems: 'center',
-    alignSelf: 'stretch',
-  },
+    alignSelf: 'stretch' },
   primaryBtnSmall: { alignSelf: 'auto', paddingHorizontal: SPACING.lg, paddingVertical: 14 },
   primaryBtnText: { color: COLORS.accentText, fontSize: FONT.base, fontWeight: '600' },
   secondaryBtn: { paddingVertical: 14, paddingHorizontal: SPACING.sm },
@@ -707,8 +690,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     width: '100%',
     overflow: 'hidden',
-    marginBottom: SPACING.sm,
-  },
+    marginBottom: SPACING.sm },
   summaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -716,9 +698,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
-    gap: SPACING.sm,
-  },
+    gap: SPACING.sm },
   summaryIcon: { width: 28 },
   summaryLabel: { flex: 1, color: COLORS.textSecondary, fontSize: FONT.base },
-  summaryValue: { color: COLORS.primary, fontSize: FONT.base, fontWeight: '700' },
-});
+  summaryValue: { color: COLORS.primary, fontSize: FONT.base, fontWeight: '700' } });

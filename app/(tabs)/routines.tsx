@@ -1,12 +1,10 @@
 import {
   View,
   Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
+  StyleSheet,ScrollView,
   TouchableOpacity,
-  Alert,
-} from 'react-native';
+  Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoutineStore } from '../../stores/useRoutineStore';
@@ -21,8 +19,7 @@ const MUSCLE_LABELS: Record<string, string> = {
   chest: 'Pecho', back: 'Espalda', shoulders: 'Hombros',
   biceps: 'Bíceps', triceps: 'Tríceps', legs: 'Piernas',
   quads: 'Cuádriceps', hamstrings: 'Isquios', glutes: 'Glúteos',
-  calves: 'Gemelos', core: 'Core', cardio: 'Cardio', full_body: 'Full Body',
-};
+  calves: 'Gemelos', core: 'Core', cardio: 'Cardio', full_body: 'Full Body' };
 
 export default function RoutinesScreen() {
   const router = useRouter();
@@ -47,7 +44,7 @@ export default function RoutinesScreen() {
   const DAY_NAMES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <style={styles.safe}>
       <View style={styles.headerBar}>
         <Text style={styles.pageTitle}>Mis Rutinas</Text>
         <Text style={styles.pageCount}>{routines.length} rutinas</Text>
@@ -163,7 +160,7 @@ export default function RoutinesScreen() {
       <TouchableOpacity style={styles.fab} onPress={handleNewRoutine} activeOpacity={0.85}>
         <Ionicons name="add" size={30} color="#000" />
       </TouchableOpacity>
-    </SafeAreaView>
+    </>
   );
 }
 
@@ -175,8 +172,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.md,
-    paddingBottom: SPACING.sm,
-  },
+    paddingBottom: SPACING.sm },
   pageTitle: { color: COLORS.textPrimary, fontSize: FONT.xxl, fontWeight: '800' },
   pageCount: { color: COLORS.textMuted, fontSize: FONT.base },
 
@@ -187,8 +183,7 @@ const styles = StyleSheet.create({
   emptyIconChip: {
     width: 64, height: 64, borderRadius: RADIUS.lg,
     backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
-    alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.md,
-  },
+    alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.md },
   emptyTitle: { color: COLORS.textPrimary, fontSize: FONT.lg, fontWeight: '700', marginBottom: 8 },
   emptySub: { color: COLORS.textMuted, fontSize: FONT.base, textAlign: 'center', paddingHorizontal: SPACING.xl },
 
@@ -208,8 +203,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.sm,
     backgroundColor: COLORS.surface,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   dayPillActive: { backgroundColor: COLORS.primaryDim },
   dayText: { color: COLORS.textMuted, fontSize: 11, fontWeight: '600' },
   dayTextActive: { color: COLORS.primary },
@@ -229,8 +223,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 8,
-    elevation: 8,
-  },
+    elevation: 8 },
   deleteBtn: {
     width: 32,
     height: 32,
@@ -238,6 +231,4 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.danger + '18',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 4,
-  },
-});
+    marginTop: 4 } });
