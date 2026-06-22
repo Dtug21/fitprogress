@@ -1,11 +1,9 @@
 import {
   View,
   Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+  StyleSheet,ScrollView,
+  TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -21,8 +19,7 @@ const MUSCLE_LABELS: Record<string, string> = {
   chest: 'Pecho', back: 'Espalda', shoulders: 'Hombros',
   biceps: 'Bíceps', triceps: 'Tríceps', legs: 'Piernas',
   quads: 'Cuádriceps', hamstrings: 'Isquios', glutes: 'Glúteos',
-  calves: 'Gemelos', core: 'Core', cardio: 'Cardio', full_body: 'Cuerpo completo',
-};
+  calves: 'Gemelos', core: 'Core', cardio: 'Cardio', full_body: 'Cuerpo completo' };
 
 const EQUIPMENT_LABELS: Record<string, string> = {
   dumbbells: 'Mancuernas', adjustable_bench: 'Banco', straight_barbell: 'Barra plana',
@@ -30,19 +27,16 @@ const EQUIPMENT_LABELS: Record<string, string> = {
   short_bands: 'Mini bandas', ab_wheel: 'Rueda abdominal', jump_rope: 'Cuerda',
   hand_grippers: 'Hand grippers', bodyweight: 'Peso corporal', barbell: 'Barra',
   cable: 'Polea', machine: 'Máquina', pull_up_bar: 'Barra dominadas',
-  dip_bars: 'Paralelas', rack: 'Rack', leg_press: 'Prensa', smith_machine: 'Smith',
-};
+  dip_bars: 'Paralelas', rack: 'Rack', leg_press: 'Prensa', smith_machine: 'Smith' };
 
 const TYPE_LABELS: Record<string, string> = {
-  compound: 'Compuesto', isolation: 'Aislamiento', cardio: 'Cardio', mobility: 'Movilidad',
-};
+  compound: 'Compuesto', isolation: 'Aislamiento', cardio: 'Cardio', mobility: 'Movilidad' };
 
 const TYPE_DESC: Record<string, string> = {
   compound: 'Activa múltiples grupos musculares y articulaciones. Ideal para fuerza e hipertrofia global.',
   isolation: 'Focaliza un músculo específico. Útil para corregir desequilibrios o dar volumen adicional.',
   cardio: 'Trabaja el sistema cardiovascular y quema calorías. Mejora la resistencia.',
-  mobility: 'Mejora el rango de movimiento y la flexibilidad. Clave para la longevidad y prevención de lesiones.',
-};
+  mobility: 'Mejora el rango de movimiento y la flexibilidad. Clave para la longevidad y prevención de lesiones.' };
 
 const DIFFICULTY_COLORS = ['', COLORS.success, '#84CC16', COLORS.warning, '#F97316', COLORS.danger];
 const DIFFICULTY_LABELS = ['', 'Principiante', 'Básico', 'Intermedio', 'Avanzado', 'Experto'];
@@ -59,52 +53,41 @@ const SCIENCE_TIPS: Record<string, { title: string; tip: string }[]> = {
   compound: [
     {
       title: 'Rango de movimiento completo',
-      tip: 'Bajar hasta el punto de mayor elongación muscular produce más hipertrofia que rangos parciales. No te quedes a medias.',
-    },
+      tip: 'Bajar hasta el punto de mayor elongación muscular produce más hipertrofia que rangos parciales. No te quedes a medias.' },
     {
       title: 'Tensión intencional',
-      tip: 'Aprieta el músculo objetivo en toda la fase concéntrica (subida). No solo "levantar el peso" — contraer el músculo.',
-    },
+      tip: 'Aprieta el músculo objetivo en toda la fase concéntrica (subida). No solo "levantar el peso" — contraer el músculo.' },
     {
       title: 'Fase excéntrica controlada',
-      tip: 'Bajar en 2-3 segundos produce más daño muscular productivo que dejar caer. Más hipertrofia con el mismo peso.',
-    },
+      tip: 'Bajar en 2-3 segundos produce más daño muscular productivo que dejar caer. Más hipertrofia con el mismo peso.' },
   ],
   isolation: [
     {
       title: 'Conexión mente-músculo',
-      tip: 'Visualiza y siente el músculo que trabajas. Los estudios muestran que pensar activamente en el músculo aumenta su activación hasta un 20%.',
-    },
+      tip: 'Visualiza y siente el músculo que trabajas. Los estudios muestran que pensar activamente en el músculo aumenta su activación hasta un 20%.' },
     {
       title: 'No uses impulso',
-      tip: 'Si necesitas balancearte para levantar, el peso es demasiado. Reduce carga y mantén el control total en todo momento.',
-    },
+      tip: 'Si necesitas balancearte para levantar, el peso es demasiado. Reduce carga y mantén el control total en todo momento.' },
     {
       title: 'Pausa en pico de contracción',
-      tip: 'Aguanta 1 segundo en la posición de máxima contracción. Aumenta la tensión muscular y la bomba de sangre al músculo.',
-    },
+      tip: 'Aguanta 1 segundo en la posición de máxima contracción. Aumenta la tensión muscular y la bomba de sangre al músculo.' },
   ],
   cardio: [
     {
       title: 'Calentamiento progresivo',
-      tip: 'Los primeros 2-3 minutos a intensidad baja preparan el sistema cardiovascular y reducen el riesgo de lesión.',
-    },
+      tip: 'Los primeros 2-3 minutos a intensidad baja preparan el sistema cardiovascular y reducen el riesgo de lesión.' },
     {
       title: 'Respiración rítmica',
-      tip: 'Inhala por la nariz, exhala por la boca. Un ritmo constante retrasa la fatiga y mejora la oxigenación muscular.',
-    },
+      tip: 'Inhala por la nariz, exhala por la boca. Un ritmo constante retrasa la fatiga y mejora la oxigenación muscular.' },
   ],
   mobility: [
     {
       title: 'No fuerces el dolor',
-      tip: 'Siente el estiramiento, no el dolor. Si duele, retrocede un poco. La movilidad mejora con consistencia, no con fuerza bruta.',
-    },
+      tip: 'Siente el estiramiento, no el dolor. Si duele, retrocede un poco. La movilidad mejora con consistencia, no con fuerza bruta.' },
     {
       title: 'Mantén la tensión activa',
-      tip: 'En lugar de relajarte completamente, mantén tensión suave en los músculos antagonistas. Mejora más el rango activo.',
-    },
-  ],
-};
+      tip: 'En lugar de relajarte completamente, mantén tensión suave en los músculos antagonistas. Mejora más el rango activo.' },
+  ] };
 
 // ─── Sección colapsable ───────────────────────────────────────────────────────
 
@@ -112,8 +95,7 @@ function SectionBlock({
   title,
   icon,
   children,
-  accentColor,
-}: {
+  accentColor }: {
   title: string;
   icon: keyof typeof Ionicons.glyphMap;
   children: React.ReactNode;
@@ -154,14 +136,14 @@ export default function ExerciseDetailScreen() {
 
   if (!exercise) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <style={styles.safe}>
         <View style={styles.center}>
           <Text style={styles.notFound}>Ejercicio no encontrado</Text>
           <TouchableOpacity onPress={() => router.back()}>
             <Text style={styles.backLink}>← Volver</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </>
     );
   }
 
@@ -177,7 +159,7 @@ export default function ExerciseDetailScreen() {
     .filter((s) => s.length > 5);
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <style={styles.safe}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
@@ -405,7 +387,7 @@ export default function ExerciseDetailScreen() {
 
         <View style={{ height: 60 }} />
       </ScrollView>
-    </SafeAreaView>
+    </>
   );
 }
 
@@ -418,26 +400,22 @@ const sectionStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     overflow: 'hidden',
-    marginBottom: SPACING.sm,
-  },
+    marginBottom: SPACING.sm },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    padding: SPACING.md,
-  },
+    padding: SPACING.md },
   iconBox: {
     width: 32,
     height: 32,
     borderRadius: RADIUS.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.surface,
-  },
+    backgroundColor: COLORS.surface },
   iconText: { fontSize: 16 },
   title: { flex: 1, color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '700' },
-  body: { paddingHorizontal: SPACING.md, paddingBottom: SPACING.md, gap: 10 },
-});
+  body: { paddingHorizontal: SPACING.md, paddingBottom: SPACING.md, gap: 10 } });
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.bg },
@@ -448,16 +426,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
-    gap: SPACING.sm,
-  },
+    gap: SPACING.sm },
   backBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
     backgroundColor: COLORS.surface,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerTitle: { flex: 1, color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '700' },
 
   hero: {
@@ -468,8 +444,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: SPACING.md,
-    gap: SPACING.md,
-  },
+    gap: SPACING.md },
   heroLeft: { flex: 1, gap: 4 },
   musclePrimary: { fontSize: FONT.sm, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 },
   exerciseName: { color: COLORS.textPrimary, fontSize: FONT.xl, fontWeight: '800', lineHeight: 28 },
@@ -480,8 +455,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
-  },
+    borderColor: COLORS.border },
   badgeText: { color: COLORS.textSecondary, fontSize: FONT.sm, fontWeight: '600' },
 
   diffBox: { alignItems: 'center', gap: 4 },
@@ -492,8 +466,7 @@ const styles = StyleSheet.create({
   diffDesc: {
     borderLeftWidth: 3,
     paddingLeft: SPACING.sm,
-    paddingVertical: 4,
-  },
+    paddingVertical: 4 },
   diffDescText: { color: COLORS.textMuted, fontSize: FONT.sm, lineHeight: 18 },
 
   typeDesc: { paddingVertical: 4 },
@@ -508,8 +481,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
-  },
+    borderColor: COLORS.border },
   equipChipText: { color: COLORS.textSecondary, fontSize: FONT.sm, fontWeight: '600' },
   muscleChip: { backgroundColor: COLORS.primaryDim, borderColor: COLORS.primary + '40' },
   muscleChipText: { color: COLORS.primary },
@@ -525,8 +497,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 1,
-    flexShrink: 0,
-  },
+    flexShrink: 0 },
   stepNumText: { color: '#000', fontSize: FONT.sm, fontWeight: '800' },
   stepText: { flex: 1, color: COLORS.textSecondary, fontSize: FONT.base, lineHeight: 22 },
 
@@ -540,8 +511,7 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     gap: 4,
     borderLeftWidth: 3,
-    borderLeftColor: COLORS.primary,
-  },
+    borderLeftColor: COLORS.primary },
   scienceTitle: { color: COLORS.primary, fontSize: FONT.base, fontWeight: '700' },
   scienceTip: { color: COLORS.textSecondary, fontSize: FONT.base, lineHeight: 22 },
 
@@ -554,8 +524,7 @@ const styles = StyleSheet.create({
     padding: SPACING.sm,
     borderWidth: 1,
     borderColor: COLORS.border,
-    gap: 4,
-  },
+    gap: 4 },
   progressionDir: { color: COLORS.textMuted, fontSize: 10, fontWeight: '600', textTransform: 'uppercase' },
   progressionName: { color: COLORS.textPrimary, fontSize: FONT.sm, fontWeight: '700', lineHeight: 17 },
   progDiffRow: { flexDirection: 'row', gap: 3, marginTop: 2 },
@@ -569,8 +538,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary + '40',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-  },
+    gap: 4 },
   progressionCurrentLabel: { color: COLORS.primary, fontSize: 10, fontWeight: '800', letterSpacing: 1 },
   progressionCurrentName: { color: COLORS.textPrimary, fontSize: FONT.sm, fontWeight: '700', textAlign: 'center', lineHeight: 17 },
 
@@ -587,12 +555,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: COLORS.card,
     borderWidth: 1,
-    borderColor: COLORS.border,
-  },
+    borderColor: COLORS.border },
   exerciseImage: {
     width: '100%',
-    height: 220,
-  },
+    height: 220 },
 
   muscleMapCard: {
     backgroundColor: COLORS.card,
@@ -602,13 +568,10 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     gap: SPACING.sm,
     width: '100%',
-    overflow: 'hidden',
-  },
+    overflow: 'hidden' },
   muscleMapTitle: {
     color: COLORS.textPrimary,
     fontSize: FONT.base,
     fontWeight: '800',
     alignSelf: 'flex-start',
-    marginBottom: 2,
-  },
-});
+    marginBottom: 2 } });

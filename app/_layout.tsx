@@ -3,7 +3,7 @@ import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform, useWindowDimensions } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, DarkTheme } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
@@ -23,6 +23,7 @@ export const unstable_settings = {
 export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
+  const { width } = useWindowDimensions();
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -84,7 +85,12 @@ export default function RootLayout() {
       }
     }}>
       <View style={styles.webContainer}>
-        <View style={styles.appWrapper}>
+        <View style={[styles.appWrapper, { 
+          maxWidth: Platform.OS === 'web' && width > 768 ? 600 : '100%',
+          boxShadow: Platform.OS === 'web' && width > 768 ? '0px 0px 20px rgba(0,0,0,0.5)' : undefined,
+          borderLeftWidth: Platform.OS === 'web' && width > 768 ? 1 : 0,
+          borderRightWidth: Platform.OS === 'web' && width > 768 ? 1 : 0,
+        }]}>
           <SafeAreaProvider>
             <StatusBar style="light" backgroundColor={COLORS.bg} />
             <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.bg } }}>
@@ -112,13 +118,8 @@ const styles = StyleSheet.create({
   appWrapper: {
     flex: 1,
     width: '100%',
-    maxWidth: Platform.OS === 'web' ? 600 : undefined,
     backgroundColor: COLORS.bg,
     overflow: 'hidden',
-    // Opcional: Para darle un look de móvil más realista en PC, agregamos sombra y borde sutil
-    boxShadow: Platform.OS === 'web' ? '0px 0px 20px rgba(0,0,0,0.5)' : undefined,
-    borderLeftWidth: Platform.OS === 'web' ? 1 : 0,
-    borderRightWidth: Platform.OS === 'web' ? 1 : 0,
     borderColor: COLORS.border,
   }
 });

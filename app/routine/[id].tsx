@@ -1,13 +1,11 @@
 import {
   View,
   Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
+  StyleSheet,ScrollView,
   TouchableOpacity,
   TextInput,
-  Alert,
-} from 'react-native';
+  Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,8 +27,7 @@ const MUSCLE_LABELS: Record<string, string> = {
   chest: 'Pecho', back: 'Espalda', shoulders: 'Hombros',
   biceps: 'Bíceps', triceps: 'Tríceps', legs: 'Piernas',
   quads: 'Cuádriceps', hamstrings: 'Isquios', glutes: 'Glúteos',
-  calves: 'Gemelos', core: 'Core', cardio: 'Cardio', full_body: 'Full Body',
-};
+  calves: 'Gemelos', core: 'Core', cardio: 'Cardio', full_body: 'Full Body' };
 
 const MUSCLE_GROUPS = [
   'chest', 'back', 'shoulders', 'biceps', 'triceps',
@@ -42,8 +39,7 @@ export default function RoutineEditorScreen() {
   const router = useRouter();
   const {
     getRoutineById, updateRoutine, removeExerciseFromRoutine, addExerciseToRoutine,
-    updateRoutineExercise, moveExercise,
-  } = useRoutineStore();
+    updateRoutineExercise, moveExercise } = useRoutineStore();
   const { profile } = useUserStore();
 
   const routine = getRoutineById(id);
@@ -53,9 +49,9 @@ export default function RoutineEditorScreen() {
 
   if (!routine) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <style={styles.safe}>
         <Text style={styles.errorText}>Rutina no encontrada</Text>
-      </SafeAreaView>
+      </>
     );
   }
 
@@ -81,8 +77,7 @@ export default function RoutineEditorScreen() {
       order: routine!.exercises.length,
       target_sets: 3,
       target_reps: '8-12',
-      rest_seconds: 90,
-    };
+      rest_seconds: 90 };
     addExerciseToRoutine(id, re);
     setShowExercisePicker(false);
     setSearchText('');
@@ -95,8 +90,7 @@ export default function RoutineEditorScreen() {
       {
         text: 'Quitar',
         style: 'destructive',
-        onPress: () => removeExerciseFromRoutine(id, exerciseId),
-      },
+        onPress: () => removeExerciseFromRoutine(id, exerciseId) },
     ]);
   }
 
@@ -118,7 +112,7 @@ export default function RoutineEditorScreen() {
 
   if (showExercisePicker) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <style={styles.safe}>
         <View style={styles.pickerHeader}>
           <TouchableOpacity onPress={() => { setShowExercisePicker(false); setSearchText(''); setFilterMuscle(null); }} style={styles.backBtn}>
             <Ionicons name="close" size={24} color={COLORS.textPrimary} />
@@ -180,12 +174,12 @@ export default function RoutineEditorScreen() {
           )}
           <View style={{ height: 40 }} />
         </ScrollView>
-      </SafeAreaView>
+      </>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <style={styles.safe}>
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
@@ -269,7 +263,7 @@ export default function RoutineEditorScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
-    </SafeAreaView>
+    </>
   );
 }
 
@@ -283,8 +277,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-  },
+    paddingVertical: SPACING.sm },
   backBtn: { width: 40, height: 40, alignItems: 'flex-start', justifyContent: 'center' },
   pageTitle: { color: COLORS.textPrimary, fontSize: FONT.lg, fontWeight: '700', flex: 1, textAlign: 'center' },
 
@@ -298,8 +291,7 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontSize: FONT.md,
     padding: SPACING.md,
-    height: 52,
-  },
+    height: 52 },
 
   daysRow: { flexDirection: 'row', gap: 6 },
   dayPill: {
@@ -308,8 +300,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.sm,
     backgroundColor: COLORS.surface,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   dayPillActive: { backgroundColor: COLORS.primaryDim },
   dayText: { color: COLORS.textMuted, fontSize: 11, fontWeight: '700' },
   dayTextActive: { color: COLORS.primary },
@@ -330,8 +321,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: COLORS.primaryDim,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   exIndexText: { color: COLORS.primary, fontSize: FONT.sm, fontWeight: '700' },
   exInfo: { flex: 1 },
   exName: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '600' },
@@ -347,8 +337,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-  },
+    paddingVertical: SPACING.sm },
   pickerTitle: { color: COLORS.textPrimary, fontSize: FONT.lg, fontWeight: '700' },
   searchInput: {
     marginHorizontal: SPACING.lg,
@@ -360,8 +349,7 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontSize: FONT.base,
     padding: SPACING.md,
-    height: 48,
-  },
+    height: 48 },
   muscleFilter: { flexGrow: 0, marginBottom: SPACING.sm },
   muscleFilterContent: { paddingHorizontal: SPACING.lg, gap: 8 },
   muscleChip: {
@@ -370,8 +358,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.xl,
     backgroundColor: COLORS.surface,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   muscleChipActive: { backgroundColor: COLORS.primary },
   muscleChipText: { color: COLORS.textMuted, fontSize: FONT.sm, fontWeight: '600' },
   muscleChipTextActive: { color: '#000' },
@@ -381,5 +368,4 @@ const styles = StyleSheet.create({
   exercisePickerInfo: { flex: 1 },
   exercisePickerName: { color: COLORS.textPrimary, fontSize: FONT.base, fontWeight: '600' },
   exercisePickerMeta: { color: COLORS.textMuted, fontSize: FONT.sm, marginTop: 2 },
-  noResults: { color: COLORS.textMuted, textAlign: 'center', marginTop: 40, fontSize: FONT.base },
-});
+  noResults: { color: COLORS.textMuted, textAlign: 'center', marginTop: 40, fontSize: FONT.base } });

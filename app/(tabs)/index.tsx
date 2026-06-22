@@ -1,11 +1,9 @@
 import {
   View,
   Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+  StyleSheet,ScrollView,
+  TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useUserStore } from '../../stores/useUserStore';
@@ -23,8 +21,7 @@ const MUSCLE_LABELS: Record<string, string> = {
   chest: 'Pecho', back: 'Espalda', shoulders: 'Hombros',
   biceps: 'Bíceps', triceps: 'Tríceps', legs: 'Piernas',
   quads: 'Cuádriceps', hamstrings: 'Isquios', glutes: 'Glúteos',
-  calves: 'Gemelos', core: 'Core', cardio: 'Cardio', full_body: 'Full Body',
-};
+  calves: 'Gemelos', core: 'Core', cardio: 'Cardio', full_body: 'Full Body' };
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -59,7 +56,7 @@ export default function HomeScreen() {
     .replace('.', '');
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <style={styles.safe}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -198,13 +195,12 @@ export default function HomeScreen() {
           </>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </>
   );
 }
 
 function StatTile({
-  icon, label, value, unit, highlight,
-}: {
+  icon, label, value, unit, highlight }: {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   value: string;
@@ -245,16 +241,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: SPACING.xs,
-  },
+    marginBottom: SPACING.xs },
   dateLabel: { ...TEXT.overline },
   greeting: {
     color: COLORS.textPrimary,
     fontSize: FONT.xl,
     fontWeight: WEIGHT.semibold,
     letterSpacing: TRACKING.tight,
-    marginTop: 3,
-  },
+    marginTop: 3 },
 
   statsRow: { flexDirection: 'row', gap: SPACING.sm },
   statTile: {
@@ -263,29 +257,25 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.border,
-    padding: 14,
-  },
+    padding: 14 },
   statTop: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 10 },
   statLabel: { ...TEXT.overline, fontSize: 10 },
   statValue: {
     color: COLORS.textPrimary,
     fontSize: FONT.xxl,
-    ...TEXT.numeric,
-  },
+    ...TEXT.numeric },
   statUnit: { color: COLORS.textMuted, fontSize: FONT.base, fontWeight: WEIGHT.regular },
 
   sectionHead: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
-    marginTop: SPACING.sm,
-  },
+    marginTop: SPACING.sm },
   sectionTitle: {
     color: COLORS.textPrimary,
     fontSize: FONT.md,
     fontWeight: WEIGHT.semibold,
-    letterSpacing: TRACKING.tight,
-  },
+    letterSpacing: TRACKING.tight },
   sectionMeta: { color: COLORS.textMuted, fontSize: FONT.sm },
 
   routineHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.sm },
@@ -298,13 +288,11 @@ const styles = StyleSheet.create({
     width: 40, height: 40, borderRadius: RADIUS.md,
     backgroundColor: COLORS.cardElevated,
     alignItems: 'center', justifyContent: 'center',
-    marginBottom: SPACING.md,
-  },
+    marginBottom: SPACING.md },
   iconChipSm: {
     width: 36, height: 36, borderRadius: RADIUS.sm,
     backgroundColor: COLORS.cardElevated,
-    alignItems: 'center', justifyContent: 'center',
-  },
+    alignItems: 'center', justifyContent: 'center' },
   noRoutineTitle: { color: COLORS.textPrimary, fontSize: FONT.md, fontWeight: WEIGHT.semibold, marginBottom: 6 },
   noRoutineSub: { color: COLORS.textSecondary, fontSize: FONT.base, lineHeight: 20 },
 
@@ -316,8 +304,6 @@ const styles = StyleSheet.create({
   moodChip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: COLORS.cardElevated,
-    paddingHorizontal: 10, paddingVertical: 6, borderRadius: RADIUS.pill,
-  },
+    paddingHorizontal: 10, paddingVertical: 6, borderRadius: RADIUS.pill },
   moodDotInner: { width: 8, height: 8, borderRadius: 4 },
-  moodText: { color: COLORS.textSecondary, fontSize: FONT.sm, fontWeight: WEIGHT.medium },
-});
+  moodText: { color: COLORS.textSecondary, fontSize: FONT.sm, fontWeight: WEIGHT.medium } });
