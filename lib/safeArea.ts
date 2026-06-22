@@ -27,11 +27,16 @@ export function readWebSafeAreaInsets(): {
   ].join(';');
   document.body.appendChild(probe);
   const style = getComputedStyle(probe);
-  const top = parseFloat(style.paddingTop) || 0;
-  const bottom = parseFloat(style.paddingBottom) || 0;
+  let top = parseFloat(style.paddingTop) || 0;
+  let bottom = parseFloat(style.paddingBottom) || 0;
   const left = parseFloat(style.paddingLeft) || 0;
   const right = parseFloat(style.paddingRight) || 0;
   document.body.removeChild(probe);
+
+  if (isStandaloneWeb() && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    if (bottom === 0) bottom = 34;
+    if (top === 0) top = 47;
+  }
 
   return { top, bottom, left, right };
 }
@@ -49,13 +54,17 @@ export function buildWebInitialMetrics(): Metrics | undefined {
   if (typeof window === 'undefined') return undefined;
 
   const insets = readWebSafeAreaInsets();
+  const vv = window.visualViewport;
+  const width = vv?.width ?? window.innerWidth;
+  const height = vv?.height ?? window.innerHeight;
+
   return {
     insets,
     frame: {
       x: 0,
       y: 0,
-      width: window.innerWidth,
-      height: window.innerHeight,
+      width,
+      height,
     },
   };
 }
@@ -73,9 +82,11 @@ export function useWebSafeAreaMetrics(): Metrics | undefined {
     update();
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', update);
+    window.visualViewport?.addEventListener('resize', update);
     return () => {
       window.removeEventListener('resize', update);
       window.removeEventListener('orientationchange', update);
+      window.visualViewport?.removeEventListener('resize', update);
     };
   }, []);
 

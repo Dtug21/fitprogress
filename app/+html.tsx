@@ -21,7 +21,7 @@ export default function Root({ children }: { children: ReactNode }) {
         <link rel="manifest" href={`${BASE}/manifest.webmanifest`} />
 
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
         <meta name="apple-mobile-web-app-title" content="FitProgress" />
         <link rel="apple-touch-icon" href={`${BASE}/apple-touch-icon.png`} />
 
