@@ -34,19 +34,15 @@ export default function Root({ children }: { children: ReactNode }) {
 }
 
 const globalStyles = `
-html {
+html, body, #root {
   width: 100%;
   height: 100%;
   min-height: 100dvh;
+  margin: 0;
+  padding: 0;
   background-color: #0B0B0C;
 }
 body {
-  background-color: #0B0B0C;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  min-height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none;
   -webkit-text-size-adjust: 100%;
@@ -55,10 +51,7 @@ body {
 #root {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  height: 100%;
-  min-height: 100dvh;
-  background-color: #0B0B0C;
+  flex: 1;
   box-sizing: border-box;
 }
 * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }

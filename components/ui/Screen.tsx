@@ -1,5 +1,5 @@
-import { View, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
-import { useAppInsets } from '../../lib/safeArea';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import { COLORS } from '../../constants/theme';
 
 type ScreenVariant = 'tab' | 'stack' | 'full';
@@ -10,29 +10,17 @@ interface ScreenProps {
   variant?: ScreenVariant;
 }
 
+const EDGES = {
+  full: [] as const,
+  tab: ['top', 'left', 'right'] as const,
+  stack: ['top', 'left', 'right', 'bottom'] as const,
+};
+
 export function Screen({ children, style, variant = 'tab' }: ScreenProps) {
-  const insets = useAppInsets();
-
-  const insetStyle: ViewStyle =
-    variant === 'full'
-      ? {}
-      : variant === 'tab'
-        ? {
-            paddingTop: insets.top,
-            paddingLeft: insets.left,
-            paddingRight: insets.right,
-          }
-        : {
-            paddingTop: insets.top,
-            paddingBottom: insets.bottom,
-            paddingLeft: insets.left,
-            paddingRight: insets.right,
-          };
-
   return (
-    <View style={[styles.root, insetStyle, style]}>
+    <SafeAreaView style={[styles.root, style]} edges={EDGES[variant]}>
       {children}
-    </View>
+    </SafeAreaView>
   );
 }
 

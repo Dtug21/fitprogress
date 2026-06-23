@@ -20,9 +20,7 @@ function defaultMetrics(): Metrics {
 export function AppSafeAreaProvider({ children }: { children: ReactNode }) {
   return (
     <SafeAreaProvider initialMetrics={defaultMetrics()}>
-      <View style={styles.fill} pointerEvents="box-none">
-        {children}
-      </View>
+      <View style={styles.fill}>{children}</View>
     </SafeAreaProvider>
   );
 }
@@ -31,6 +29,6 @@ const styles = StyleSheet.create({
   fill: {
     flex: 1,
     width: '100%',
-    height: '100%',
+    backgroundColor: '#0B0B0C',
   },
 });

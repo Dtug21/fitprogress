@@ -87,13 +87,7 @@ export default function RootLayout() {
       },
     }}>
       <View style={[styles.shell, isDesktop && styles.shellDesktop]}>
-        <View
-          style={[
-            styles.app,
-            isDesktop && styles.appDesktop,
-            { maxWidth: isDesktop ? 600 : '100%' },
-          ]}
-        >
+        <View style={[styles.app, isDesktop && styles.appDesktop, isDesktop && { maxWidth: 600 }]}>
           <AppSafeAreaProvider>
             <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.bg } }}>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -115,19 +109,19 @@ const styles = StyleSheet.create({
   shell: {
     flex: 1,
     width: '100%',
-    height: '100%',
+    minHeight: '100dvh',
     backgroundColor: COLORS.bg,
   },
   shellDesktop: {
     backgroundColor: '#000000',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   app: {
     flex: 1,
     width: '100%',
-    height: '100%',
+    minHeight: '100dvh',
     backgroundColor: COLORS.bg,
-    position: 'relative',
   },
   appDesktop: {
     overflow: 'hidden',

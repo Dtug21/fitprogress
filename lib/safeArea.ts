@@ -2,6 +2,8 @@ import { useSafeAreaInsets, type Metrics } from 'react-native-safe-area-context'
 import { useEffect, useState } from 'react';
 import { isStandalonePwa } from './pwa';
 
+export const TAB_BAR_HEIGHT = 49;
+
 /** Lee insets reales del CSS env() en Safari / PWA iOS. */
 export function readWebSafeAreaInsets(): {
   top: number;
@@ -34,8 +36,8 @@ export function readWebSafeAreaInsets(): {
   document.body.removeChild(probe);
 
   if (isStandalonePwa() && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    if (bottom === 0) bottom = 34;
     if (top === 0) top = 47;
+    if (bottom === 0) bottom = 34;
   }
 
   return { top, bottom, left, right };
@@ -44,14 +46,14 @@ export function readWebSafeAreaInsets(): {
 export function buildWebInitialMetrics(): Metrics | undefined {
   if (typeof window === 'undefined') return undefined;
 
-  const insets = readWebSafeAreaInsets();
-  const vv = window.visualViewport;
-  const width = vv?.width ?? window.innerWidth;
-  const height = vv?.height ?? window.innerHeight;
-
   return {
-    insets,
-    frame: { x: 0, y: 0, width, height },
+    insets: readWebSafeAreaInsets(),
+    frame: {
+      x: 0,
+      y: 0,
+      width: window.innerWidth,
+      height: window.innerHeight,
+    },
   };
 }
 
@@ -77,4 +79,9 @@ export function useWebSafeAreaMetrics(): Metrics | undefined {
 
 export function useAppInsets() {
   return useSafeAreaInsets();
+}
+
+export function useTabBarHeight() {
+  const insets = useAppInsets();
+  return TAB_BAR_HEIGHT + insets.bottom;
 }
