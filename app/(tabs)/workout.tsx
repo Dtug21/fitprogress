@@ -355,7 +355,7 @@ export default function WorkoutScreen() {
           {trainedExercises.length > 0 && (
             <TouchableOpacity style={styles.hubFinishBtn} onPress={handleEndEarly} activeOpacity={0.8}>
               <Ionicons name="flag-outline" size={18} color={COLORS.warning} />
-              <Text style={styles.hubFinishText}>Terminar rutina anticipada</Text>
+              <Text style={styles.hubFinishText}>Terminar y guardar</Text>
             </TouchableOpacity>
           )}
         </ScrollView>

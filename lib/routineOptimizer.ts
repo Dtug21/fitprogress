@@ -318,17 +318,23 @@ export function generateRoutine(
     return Math.abs(a.difficulty - targetDiff) - Math.abs(b.difficulty - targetDiff);
   });
 
-  const selected: typeof eligible = [];
-  const muscleCount: Record<string, number> = {};
-
+  // Selección round-robin balanceada: cada músculo del split recibe su 1er
+  // ejercicio (compuesto) antes de que cualquiera reciba el 2º. Como dentro de
+  // cada músculo el orden es compuesto-primero, la sesión queda con los
+  // compuestos al inicio y los aislamientos después, sin sobrecargar un músculo.
+  const byMuscle: Record<string, typeof eligible> = {};
   for (const ex of sorted) {
-    const mg = ex.muscle_group;
-    muscleCount[mg] = muscleCount[mg] ?? 0;
-    if (muscleCount[mg] < exPerMuscle) {
-      selected.push(ex);
-      muscleCount[mg]++;
+    (byMuscle[ex.muscle_group] ??= []).push(ex);
+  }
+  const muscleOrder = split.muscles.filter((m) => byMuscle[m]?.length);
+
+  const selected: typeof eligible = [];
+  for (let round = 0; round < exPerMuscle && selected.length < maxExercises; round++) {
+    for (const m of muscleOrder) {
+      if (selected.length >= maxExercises) break;
+      const pick = byMuscle[m][round];
+      if (pick) selected.push(pick);
     }
-    if (selected.length >= maxExercises) break;
   }
 
   const setsAdjusted = Math.max(

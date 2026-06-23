@@ -34,12 +34,7 @@ function PwaTabBar(props: BottomTabBarProps) {
     return null;
   }
 
-  return (
-    <BottomTabBar
-      {...props}
-      style={[styles.tabBar, props.style]}
-    />
-  );
+  return <BottomTabBar {...props} />;
 }
 
 export default function TabLayout() {

@@ -109,7 +109,6 @@ const styles = StyleSheet.create({
   shell: {
     flex: 1,
     width: '100%',
-    minHeight: '100dvh',
     backgroundColor: COLORS.bg,
   },
   shellDesktop: {
@@ -120,7 +119,6 @@ const styles = StyleSheet.create({
   app: {
     flex: 1,
     width: '100%',
-    minHeight: '100dvh',
     backgroundColor: COLORS.bg,
   },
   appDesktop: {

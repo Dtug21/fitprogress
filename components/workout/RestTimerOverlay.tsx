@@ -117,12 +117,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 4,
     backgroundColor: COLORS.border,
-    borderRadius: RADIUS.full,
+    borderRadius: RADIUS.pill,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    borderRadius: RADIUS.full,
+    borderRadius: RADIUS.pill,
   },
   controls: {
     flexDirection: 'row',
